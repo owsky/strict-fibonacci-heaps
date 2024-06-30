@@ -6,7 +6,7 @@ class HeapRecord<T : Comparable<T>> {
     var activeRecord: ActiveRecord = ActiveRecord()
     var nonLinkableChild: NodeRecord<T>? = null
     var qHead: NodeRecord<T>? = null
-    var rankList: RankListRecord<T>? = null
+    var rankList: RankListRecord<T> = RankListRecord()
     var fixList: FixListRecord<T>? = null
     var singles: FixListRecord<T>? = null
 }

@@ -11,7 +11,7 @@ fun <T : Comparable<T>> activeRootReduction(
 ) {
     if (!n1.isActiveRoot() || !n2.isActiveRoot())
         throw IllegalArgumentException("Nodes should be an active root")
-    if (n1.getRank() != n2.getRank())
+    if (n1.getRank() !== n2.getRank())
         throw IllegalArgumentException("Nodes should have the same rank")
 
     val x = if (n1.item <= n2.item) n1 else n2

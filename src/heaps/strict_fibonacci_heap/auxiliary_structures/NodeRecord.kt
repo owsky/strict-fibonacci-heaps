@@ -54,4 +54,21 @@ class NodeRecord<T : Comparable<T>>(val item: T) {
                 "Trying to access the rank pointer for a node which isn't an active root nor an active node with positive loss")
         }
     }
+
+    fun setRank(newRank: RankListRecord<T>) {
+        if (isInFixList()) {
+            val fix = rankFixListRecord!!
+            --fix.rank.refCount
+            ++newRank.refCount
+            rankFixListRecord!!.rank = newRank
+        } else if (isActive()) {
+            val prevRank = rankRankListRecord!!
+            --prevRank.refCount
+            ++newRank.refCount
+            rankRankListRecord = newRank
+        } else {
+            throw IllegalAccessException(
+                "Trying to access the rank pointer for a node which isn't an active root nor an active node with positive loss")
+        }
+    }
 }
