@@ -40,7 +40,7 @@ fun runDijkstra() {
     graph.printNodesDetails()
 }
 
-fun main(args: Array<String>) {
+fun main() {
     runDijkstra()
     runPrim()
 }

@@ -10,8 +10,9 @@ import heaps.strict_fibonacci_heap.StrictFibonacciHeap
 fun dijkstra(graph: Graph, s: Node, heapKind: HeapKind) {
     val x: MutableSet<Node> = HashSet()
     graph.initSingleSource(s)
+    val nodes = graph.getNodes()
     val heap: MinHeap<Node> =
-        if (heapKind == HeapKind.BINARY_HEAP) BinaryHeap() else StrictFibonacciHeap()
+        if (heapKind == HeapKind.BINARY_HEAP) BinaryHeap(nodes) else StrictFibonacciHeap(nodes)
 
     while (!heap.isEmpty()) {
         val wMin = heap.extractMin()
@@ -21,10 +22,10 @@ fun dijkstra(graph: Graph, s: Node, heapKind: HeapKind) {
             if (!x.contains(y)) {
                 val relaxed = wMin.key + edgeWeight
                 if (y.key > relaxed) {
-                    y.key = relaxed
                     val ySmaller = Node(y.id)
                     ySmaller.key = relaxed
                     heap.decreaseKey(y, ySmaller)
+                    y.key = relaxed
                 }
             }
         }

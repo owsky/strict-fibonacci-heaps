@@ -98,7 +98,7 @@ class BinaryHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) : MinHea
 
     override fun decreaseKey(key: T, smallerKey: T) {
         val index = lookup[key] ?: throw IllegalArgumentException("Key not found in heap")
-        if (smallerKey > data[index]) {
+        if (smallerKey >= data[index]) {
             throw IllegalArgumentException(
                 "New key is not smaller than current key. Previous: ${data[index]}, new: $smallerKey")
         }

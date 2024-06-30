@@ -2,10 +2,10 @@ package heaps.strict_fibonacci_heap
 
 import heaps.MinHeap
 
-class StrictFibonacciHeap<T : Comparable<T>> : MinHeap<T> {
-    constructor()
+class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) :
+    MinHeap<T>(items) {
 
-    constructor(vec: List<T>)
+    init {}
 
     override fun insert(item: T) {}
 
