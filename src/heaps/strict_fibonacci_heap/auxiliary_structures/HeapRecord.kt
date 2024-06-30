@@ -1,6 +1,6 @@
 package heaps.strict_fibonacci_heap.auxiliary_structures
 
-class HeapRecord<T : Comparable<T>> {
+class HeapRecord<T : Comparable<T>>(root: T? = null) {
     var size: Int = 0
     var root: NodeRecord<T>? = null
     var activeRecord: ActiveRecord = ActiveRecord()
@@ -9,4 +9,12 @@ class HeapRecord<T : Comparable<T>> {
     var rankList: RankListRecord<T> = RankListRecord()
     var fixList: FixListRecord<T>? = null
     var singles: FixListRecord<T>? = null
+
+    init {
+        root?.let {
+            val newNode = NodeRecord(root)
+            this.root = newNode
+            size = 1
+        }
+    }
 }

@@ -1,6 +1,6 @@
 package heaps.strict_fibonacci_heap.auxiliary_structures
 
-class NodeRecord<T : Comparable<T>>(val item: T) {
+class NodeRecord<T : Comparable<T>>(var item: T) {
     var left: NodeRecord<T>? = null
     var right: NodeRecord<T>? = null
     var parent: NodeRecord<T>? = null

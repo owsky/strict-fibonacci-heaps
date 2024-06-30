@@ -54,3 +54,16 @@ fun <T : Comparable<T>> rootDegreeReduction(
         y.rankFixListRecord = null
     }
 }
+
+fun <T : Comparable<T>> canPerformRootDegreeReduction(heapRecord: HeapRecord<T>): Boolean {
+    val firstChild = heapRecord.root ?: return false
+    val fstLastChild = firstChild.left!!
+    val sndLastChild = fstLastChild.left!!
+    val trdLastChild = sndLastChild.left!!
+    return fstLastChild !== sndLastChild &&
+        fstLastChild !== trdLastChild &&
+        sndLastChild !== trdLastChild &&
+        !fstLastChild.isActive() &&
+        !sndLastChild.isActive() &&
+        !trdLastChild.isActive()
+}

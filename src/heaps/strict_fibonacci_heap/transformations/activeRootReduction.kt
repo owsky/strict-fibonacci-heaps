@@ -3,6 +3,8 @@ package heaps.strict_fibonacci_heap.transformations
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import heaps.strict_fibonacci_heap.utils.fixListMove
+import heaps.strict_fibonacci_heap.utils.fixListRemove
+import heaps.strict_fibonacci_heap.utils.moveToPositiveLoss
 
 fun <T : Comparable<T>> activeRootReduction(
     n1: NodeRecord<T>,
@@ -32,4 +34,19 @@ fun <T : Comparable<T>> activeRootReduction(
         secondFixList.node.isActiveRoot() &&
         firstFixList.node.getRank() != secondFixList.node.getRank())
         fixListMove(heapRecord.singles!!.left, firstFixList, heapRecord.singles!!, heapRecord)
+
+    // y is not an active root anymore
+    if (y.loss!! == 0u) fixListRemove(y.rankFixListRecord!!, heapRecord)
+    else moveToPositiveLoss(y, heapRecord)
+}
+
+fun <T : Comparable<T>> canPerformActiveRootReduction(heapRecord: HeapRecord<T>): Boolean {
+    val lastInFix = heapRecord.fixList ?: return false
+    val firstInFix = lastInFix.right
+    val sndInFix = firstInFix.right
+
+    return firstInFix !== sndInFix &&
+        firstInFix.node.isActiveRoot() &&
+        sndInFix.node.isActiveRoot() &&
+        firstInFix.rank === sndInFix.rank
 }
