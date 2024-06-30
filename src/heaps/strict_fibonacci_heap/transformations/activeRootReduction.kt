@@ -31,5 +31,5 @@ fun <T : Comparable<T>> activeRootReduction(
     if (firstFixList.node.isActiveRoot() &&
         secondFixList.node.isActiveRoot() &&
         firstFixList.node.getRank() != secondFixList.node.getRank())
-        fixListMove(heapRecord.singles!!.left, firstFixList, heapRecord.singles!!)
+        fixListMove(heapRecord.singles!!.left, firstFixList, heapRecord.singles!!, heapRecord)
 }

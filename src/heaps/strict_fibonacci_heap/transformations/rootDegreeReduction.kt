@@ -2,9 +2,9 @@ package heaps.strict_fibonacci_heap.transformations
 
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
-import heaps.strict_fibonacci_heap.utils.fixListMove
 import heaps.strict_fibonacci_heap.utils.fixListRemove
 import heaps.strict_fibonacci_heap.utils.insertIntoCircularList
+import heaps.strict_fibonacci_heap.utils.moveToActiveRoots
 
 fun <T : Comparable<T>> rootDegreeReduction(
     a: NodeRecord<T>,
@@ -46,32 +46,11 @@ fun <T : Comparable<T>> rootDegreeReduction(
     y.setRank(zeroRank)
 
     // adjust fix-list for x (changed rank)
-    val xFixList = x.rankFixListRecord!!
-    val xRank = xFixList.rank
-    val xRankActiveRoot = xRank.activeRoots
-    if (xRankActiveRoot == null) {
-        // if there are no active roots of this rank, put in part 2
-        fixListMove(x.rankFixListRecord!!, heapRecord.singles!!.left, heapRecord.singles!!)
-        xRank.activeRoots = xFixList
-    } else {
-        // if there is at least one active root of this rank
-        val nextInFix = xFixList.right
-        if (nextInFix.node.isActiveRoot()) {
-            // if next is also an active root
-            if (nextInFix.rank === xRank) {
-                // if next active root has the same rank, put x in-between
-                fixListMove(x.rankFixListRecord!!, xRankActiveRoot, nextInFix)
-            } else {
-                // if there is only one active root of this rank, move both to part 1
-                fixListMove(xRankActiveRoot, heapRecord.fixList!!, heapRecord.fixList!!.right)
-                fixListMove(x.rankFixListRecord!!, xRankActiveRoot, xRankActiveRoot.right)
-            }
-        }
-    }
+    moveToActiveRoots(x, heapRecord)
 
     // adjust fix-list for y (remove from it if present)
     y.rankFixListRecord?.let { fixListNode ->
-        fixListRemove(fixListNode)
+        fixListRemove(fixListNode, heapRecord)
         y.rankFixListRecord = null
     }
 }
