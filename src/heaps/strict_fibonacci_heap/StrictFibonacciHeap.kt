@@ -4,11 +4,12 @@ import heaps.MinHeap
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import heaps.strict_fibonacci_heap.transformations.*
+import heaps.strict_fibonacci_heap.utils.mergeQueues
 import heaps.strict_fibonacci_heap.utils.moveToActiveRoots
 
 class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) :
     MinHeap<T>(items) {
-    private val heapRecord = HeapRecord<T>()
+    private var heapRecord = HeapRecord<T>()
     private val lookup: MutableMap<T, NodeRecord<T>> = mutableMapOf()
 
     init {
@@ -16,12 +17,69 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
     }
 
     override fun insert(item: T) {
-        val newHeap = HeapRecord(item)
-        meld(newHeap)
+        if (heapRecord.root == null) {
+            heapRecord.root = NodeRecord(item)
+            heapRecord.size = 1
+        } else {
+            val newHeap = HeapRecord(item)
+            meld(newHeap)
+        }
     }
 
     private fun meld(otherHeap: HeapRecord<T>) {
-        // insert all other heap's items in lookup
+        lookup[otherHeap.root!!.item] = otherHeap.root!!
+        val newSize = heapRecord.size + otherHeap.size
+
+        val smallerHeap: HeapRecord<T>
+        val biggerHeap: HeapRecord<T>
+        if (heapRecord.size <= otherHeap.size) {
+            smallerHeap = heapRecord
+            biggerHeap = otherHeap
+        } else {
+            smallerHeap = otherHeap
+            biggerHeap = heapRecord
+        }
+
+        val x = smallerHeap.root!!
+        val y = biggerHeap.root!!
+
+        smallerHeap.activeRecord.flag = false
+
+        val u: NodeRecord<T>
+        val v: NodeRecord<T>
+        if (x.item <= y.item) {
+            u = x
+            v = y
+        } else {
+            u = y
+            v = x
+        }
+        link(v, u)
+
+        // merge queues
+        mergeQueues(smallerHeap, v, biggerHeap)
+
+        if (heapRecord !== biggerHeap) {
+            heapRecord = biggerHeap
+        }
+        heapRecord.size = newSize
+        heapRecord.root = u
+
+        // do one active root reduction and one root degree reduction if possible
+        var rootDegreeReductionCounter = 0
+        var activeRootReductionCounter = 0
+        while ((canPerformActiveRootReduction(heapRecord) ||
+            canPerformRootDegreeReduction(heapRecord)) &&
+            (rootDegreeReductionCounter < 1 || activeRootReductionCounter < 1)) {
+            if (rootDegreeReductionCounter < 1 && canPerformRootDegreeReduction(heapRecord)) {
+                performRootDegreeReduction(heapRecord)
+                ++rootDegreeReductionCounter
+            }
+            if (activeRootReductionCounter < 1 && canPerformActiveRootReduction(heapRecord)) {
+                performActiveRootReduction(heapRecord)
+                ++activeRootReductionCounter
+            }
+        }
     }
 
     private fun deleteMin() {}
@@ -79,18 +137,13 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
             while (activeRootReductionsCounter < 6 && rootDegreeReductionsCounter < 4) {
                 // check if active root reduction is possible
                 if (canPerformActiveRootReduction(heapRecord)) {
-                    val firstInFix = heapRecord.fixList!!.right
-                    val sndInFix = firstInFix.right
-                    activeRootReduction(firstInFix.node, sndInFix.node, heapRecord)
+                    performActiveRootReduction(heapRecord)
                     ++activeRootReductionsCounter
                 }
 
                 // check if root degree reduction is possible
                 if (canPerformRootDegreeReduction(heapRecord)) {
-                    val fstLastChild = heapRecord.root!!.left!!
-                    val sndLastChild = fstLastChild.left!!
-                    val trdLastChild = sndLastChild.left!!
-                    rootDegreeReduction(fstLastChild, sndLastChild, trdLastChild, heapRecord)
+                    performRootDegreeReduction(heapRecord)
                     ++rootDegreeReductionsCounter
                 }
             }

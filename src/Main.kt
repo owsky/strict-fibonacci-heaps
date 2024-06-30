@@ -3,6 +3,8 @@ import algorithms.prim
 import graph.Graph
 import graph.Node
 import heaps.HeapKind
+import heaps.MinHeap
+import heaps.strict_fibonacci_heap.StrictFibonacciHeap
 
 fun createGraph(): Pair<Graph, Node> {
     val graph = Graph(true)
@@ -41,6 +43,11 @@ fun runDijkstra() {
 }
 
 fun main() {
-    runDijkstra()
-    runPrim()
+    //    runDijkstra()
+    //    runPrim()
+
+    val h: MinHeap<Int> = StrictFibonacciHeap()
+    for (i in 0..4) {
+        h.insert(i)
+    }
 }

@@ -19,8 +19,8 @@ fun <T : Comparable<T>> rootDegreeReduction(
             .let { (first, second, third) -> Triple(first, second, third) }
 
     // mark x and y as active
-    x.active = heapRecord.activeRecord
-    y.active = heapRecord.activeRecord
+    x.setActive(heapRecord.activeRecord, heapRecord.rankList)
+    y.setActive(heapRecord.activeRecord, heapRecord.rankList)
 
     // link z to y, y to x
     link(z, y)
@@ -56,7 +56,7 @@ fun <T : Comparable<T>> rootDegreeReduction(
 }
 
 fun <T : Comparable<T>> canPerformRootDegreeReduction(heapRecord: HeapRecord<T>): Boolean {
-    val firstChild = heapRecord.root ?: return false
+    val firstChild = heapRecord.root?.leftChild ?: return false
     val fstLastChild = firstChild.left!!
     val sndLastChild = fstLastChild.left!!
     val trdLastChild = sndLastChild.left!!
@@ -66,4 +66,11 @@ fun <T : Comparable<T>> canPerformRootDegreeReduction(heapRecord: HeapRecord<T>)
         !fstLastChild.isActive() &&
         !sndLastChild.isActive() &&
         !trdLastChild.isActive()
+}
+
+fun <T : Comparable<T>> performRootDegreeReduction(heapRecord: HeapRecord<T>) {
+    val fstLastChild = heapRecord.root!!.leftChild!!
+    val sndLastChild = fstLastChild.left!!
+    val trdLastChild = sndLastChild.left!!
+    rootDegreeReduction(fstLastChild, sndLastChild, trdLastChild, heapRecord)
 }

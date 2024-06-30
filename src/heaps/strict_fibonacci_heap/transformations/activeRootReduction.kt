@@ -50,3 +50,9 @@ fun <T : Comparable<T>> canPerformActiveRootReduction(heapRecord: HeapRecord<T>)
         sndInFix.node.isActiveRoot() &&
         firstInFix.rank === sndInFix.rank
 }
+
+fun <T : Comparable<T>> performActiveRootReduction(heapRecord: HeapRecord<T>) {
+    val firstInFix = heapRecord.fixList!!.right
+    val sndInFix = firstInFix.right
+    activeRootReduction(firstInFix.node, sndInFix.node, heapRecord)
+}

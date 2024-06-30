@@ -13,7 +13,7 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
     var rankFixListRecord: FixListRecord<T>? = null
 
     fun isActiveRoot(): Boolean {
-        return isActive() && (parent?.isActive() ?: false)
+        return isActive() && (parent != null && !parent!!.isActive())
     }
 
     fun isActive(): Boolean {
@@ -61,5 +61,12 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
             ++newRank.refCount
             rankRankListRecord = newRank
         }
+    }
+
+    fun setActive(activeRecord: ActiveRecord, zeroRank: RankListRecord<T>) {
+        active = activeRecord
+        rankFixListRecord = FixListRecord(this, zeroRank)
+        rankRankListRecord = zeroRank
+        ++rankRankListRecord!!.refCount
     }
 }
