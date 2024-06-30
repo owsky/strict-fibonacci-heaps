@@ -9,35 +9,49 @@ class NodeRecord<T : Comparable<T>>(val item: T) {
     var qPrev: NodeRecord<T>? = null
     var qNext: NodeRecord<T>? = null
     var loss: UInt? = null
-    var rank: RankWrapper? = null
+    var rankRankListRecord: RankListRecord<T>? = null
+    var rankFixListRecord: FixListRecord<T>? = null
 
-    inner class RankWrapper {
-        var rankListRecord: RankListRecord<T>? = null
-            private set
+    fun isActiveRoot(): Boolean {
+        return isActive() && (parent?.isActive() ?: false)
+    }
 
-        var fixListRecord: FixListRecord<T>? = null
-            private set
+    fun isActive(): Boolean {
+        return active?.flag ?: false
+    }
 
-        fun setRankRecord(rankRecord: RankListRecord<T>?) {
-            if (rankRecord != null) {
-                fixListRecord = null
-            }
-            this.rankListRecord = rankRecord
-        }
+    fun isInFixList(): Boolean {
+        return isActiveRoot() || (isActive() && loss != null && loss!! > 0u)
+    }
 
-        fun setFixListRecord(fixListRecord: FixListRecord<T>?) {
-            if (fixListRecord != null) {
-                rankListRecord = null
-            }
-            this.fixListRecord = fixListRecord
-        }
+    fun getRank(): RankListRecord<T> {
+        return if (isInFixList()) rankFixListRecord!!.rank
+        else if (isActive()) rankRankListRecord!!
+        else
+            throw IllegalAccessException(
+                "Trying to access the rank pointer for a node which isn't an active root nor an active node with positive loss")
+    }
 
-        override fun toString(): String {
-            return when {
-                rankListRecord != null -> "RankRecord: $rankListRecord"
-                fixListRecord != null -> "FixListRecord: $fixListRecord"
-                else -> "Rank is null"
-            }
+    fun increaseRank() {
+        if (isInFixList()) {
+            val fix = rankFixListRecord!!
+            val nextRank = fix.rank.inc ?: RankListRecord()
+            fix.rank.inc = nextRank
+            nextRank.dec = fix.rank
+            --fix.rank.refCount
+            ++nextRank.refCount
+            fix.rank = nextRank
+        } else if (isActive()) {
+            val rank = rankRankListRecord!!
+            val nextRank = rank.inc ?: RankListRecord()
+            rank.inc = nextRank
+            nextRank.dec = rank
+            --rank.refCount
+            ++nextRank.refCount
+            rankRankListRecord = nextRank
+        } else {
+            throw IllegalAccessException(
+                "Trying to access the rank pointer for a node which isn't an active root nor an active node with positive loss")
         }
     }
 }
