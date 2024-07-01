@@ -17,13 +17,13 @@ fun <T : Comparable<T>> oneNodeLossReduction(x: NodeRecord<T>, heapRecord: HeapR
     link(x, root)
 
     // set x's loss to zero
-    x.loss = 0u
+    x.setLoss(0u)
 
     // decrease y's rank by one
     y.decreaseRank()
 
     // if y is not an active root, increase its loss by one
-    if (!y.isActiveRoot()) y.loss = y.loss!! + 1u
+    if (!y.isActiveRoot()) y.setLoss(y.loss!! + 1u)
 
     // adjust fix-list for x (it was an active node, now it's an active root)
     moveToActiveRoots(x, heapRecord)

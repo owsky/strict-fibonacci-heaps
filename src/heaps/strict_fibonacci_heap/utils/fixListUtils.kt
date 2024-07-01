@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package heaps.strict_fibonacci_heap.utils
 
 import heaps.strict_fibonacci_heap.auxiliary_structures.FixListRecord
@@ -40,8 +42,7 @@ fun <T : Comparable<T>> fixListRemove(x: FixListRecord<T>, heapRecord: HeapRecor
     val xRank = x.node.getRank()
     --xRank.refCount
 
-    x.node.rankFixListRecord = null
-    x.node.rankRankListRecord = null
+    x.node.setRank(null)
 }
 
 fun <T : Comparable<T>> fixListMove(
@@ -62,10 +63,7 @@ fun <T : Comparable<T>> fixListMove(
 
 // x is an active root in part 2 or has just become an active root
 fun <T : Comparable<T>> moveToActiveRoots(x: NodeRecord<T>, heapRecord: HeapRecord<T>) {
-    if (x.rankFixListRecord == null) {
-        x.rankFixListRecord = FixListRecord(x, x.rankRankListRecord!!)
-    }
-    val xFix = x.rankFixListRecord!!
+    val xFix = x.rank as FixListRecord<T>
     val xRank = xFix.rank
     val xRankActiveRoot = xRank.activeRoots
 
@@ -104,7 +102,7 @@ fun <T : Comparable<T>> moveToActiveRoots(x: NodeRecord<T>, heapRecord: HeapReco
 
 // x is an active node with positive loss or its loss has just increased
 fun <T : Comparable<T>> moveToPositiveLoss(x: NodeRecord<T>, heapRecord: HeapRecord<T>) {
-    val xFix = x.rankFixListRecord ?: FixListRecord(x, x.rankRankListRecord!!)
+    val xFix = x.rank as FixListRecord<T>
     val xRank = xFix.rank
     val rankLoss = xRank.loss
     if (rankLoss == null) {

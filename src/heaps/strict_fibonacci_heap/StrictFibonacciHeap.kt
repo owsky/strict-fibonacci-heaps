@@ -118,7 +118,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
 
             if (wasXActive && !wasXActiveRoot) {
                 // x becomes an active root
-                x.loss = 0u
+                x.setLoss(0u)
                 moveToActiveRoots(x, heapRecord)
                 // decrease rank of y by one
                 y.decreaseRank()

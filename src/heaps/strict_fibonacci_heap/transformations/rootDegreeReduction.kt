@@ -38,16 +38,17 @@ fun <T : Comparable<T>> rootDegreeReduction(
     link(y, x)
 
     // assign loss zero and rank one to x
-    x.loss = 0u
+    x.setLoss(0u)
     val zeroRank = heapRecord.rankList
     x.setRank(zeroRank)
     x.increaseRank()
 
     // assign loss zero and rank zero to y
-    y.loss = 0u
+    y.setLoss(0u)
     y.setRank(zeroRank)
 
     // adjust fix-list for x (changed rank)
+    x.setActiveRoot()
     moveToActiveRoots(x, heapRecord)
 }
 

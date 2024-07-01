@@ -23,7 +23,7 @@ fun <T : Comparable<T>> link(x: NodeRecord<T>, y: NodeRecord<T>) {
     previousParent?.let { if (x.isActive() && it.isActive()) it.decreaseRank() }
 
     // if the previous parent is active, increase its loss
-    previousParent?.let { if (it.isActive()) it.loss = it.loss!! + 1u }
+    previousParent?.let { if (it.isActive()) it.setLoss(it.loss!! + 1u) }
 
     // if both x and y are active, increase the rank of y
     if (x.isActive() && y.isActive()) y.increaseRank()

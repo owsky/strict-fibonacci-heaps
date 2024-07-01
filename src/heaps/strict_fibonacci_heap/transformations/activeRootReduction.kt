@@ -1,10 +1,12 @@
 package heaps.strict_fibonacci_heap.transformations
 
+import heaps.strict_fibonacci_heap.auxiliary_structures.FixListRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import heaps.strict_fibonacci_heap.utils.fixListRemove
 import heaps.strict_fibonacci_heap.utils.moveToActiveRoots
 
+@Suppress("UNCHECKED_CAST")
 fun <T : Comparable<T>> activeRootReduction(
     n1: NodeRecord<T>,
     n2: NodeRecord<T>,
@@ -22,7 +24,7 @@ fun <T : Comparable<T>> activeRootReduction(
 
     // y is not going to be an active root anymore, and it had loss zero because active roots have
     // no loss, so remove from the fix-list
-    fixListRemove(y.rankFixListRecord!!, heapRecord)
+    fixListRemove(y.rank as FixListRecord<T>, heapRecord)
 
     // link y to x, x.item < y.item
     link(y, x)
@@ -41,7 +43,7 @@ fun <T : Comparable<T>> activeRootReduction(
     }
 
     // if x is the last active root of its rank in part 1, move it to part 2
-    val xFix = x.rankFixListRecord!!
+    val xFix = x.rank as FixListRecord<T>
     val nextInFix = xFix.right
     if (!nextInFix.node.isActiveRoot() || xFix.rank !== nextInFix.rank)
         moveToActiveRoots(x, heapRecord)

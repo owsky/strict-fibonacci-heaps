@@ -1,5 +1,8 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package heaps.strict_fibonacci_heap.transformations
 
+import heaps.strict_fibonacci_heap.auxiliary_structures.FixListRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import heaps.strict_fibonacci_heap.utils.fixListRemove
@@ -40,18 +43,18 @@ fun <T : Comparable<T>> twoNodesLossReduction(
     x.increaseRank()
 
     // set loss of x and y to zero
-    x.loss = 0u
-    y.loss = 0u
+    x.setLoss(0u)
+    y.setLoss(0u)
 
     // decrease the rank of z
     z.decreaseRank()
 
     // if z is not an active root, the loss is increased by one
-    if (!z.isActiveRoot()) z.loss = z.loss!! + 1u
+    if (!z.isActiveRoot()) z.setLoss(z.loss!! + 1u)
 
     // adjust fix-list for x and y (loss is now zero)
-    fixListRemove(x.rankFixListRecord!!, heapRecord)
-    fixListRemove(y.rankFixListRecord!!, heapRecord)
+    fixListRemove(x.rank as FixListRecord<T>, heapRecord)
+    fixListRemove(y.rank as FixListRecord<T>, heapRecord)
 
     // adjust fix-list for z (decreased rank, increased loss)
     if (z.isActiveRoot()) moveToActiveRoots(z, heapRecord) else moveToPositiveLoss(z, heapRecord)
