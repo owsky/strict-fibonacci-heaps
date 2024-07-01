@@ -20,7 +20,16 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         return active?.flag ?: false
     }
 
-    private fun isInFixList(): Boolean {
+    fun isPassive(): Boolean {
+        return !isActive()
+    }
+
+    fun isPassiveLinkable(): Boolean {
+        if (leftChild != null && leftChild!!.isActive()) return false
+        return isPassive()
+    }
+
+    fun isInFixList(): Boolean {
         return isActiveRoot() || (isActive() && loss != null && loss!! > 0u)
     }
 
@@ -37,7 +46,7 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         val nextRank: RankListRecord<T>
         // if next rank doesn't exist, create it
         if (currRank.inc == null) {
-            nextRank = RankListRecord()
+            nextRank = RankListRecord(currRank.rankNumber + 1)
             currRank.inc = nextRank
             nextRank.dec = currRank
         } else {
@@ -60,8 +69,33 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         val currRank = getRank()
         --currRank.refCount
         ++newRank.refCount
-        if (isInFixList()) rankFixListRecord!!.rank = newRank
-        else if (isActive()) rankRankListRecord = newRank
+        if (isInFixList()) {
+            val nextInFix = rankFixListRecord!!.right
+
+            if (isActiveRoot()) {
+                currRank.activeRoots?.let {
+                    if (it === rankFixListRecord) {
+                        currRank.activeRoots =
+                            if (nextInFix.rank === currRank && nextInFix.node.isActiveRoot())
+                                nextInFix
+                            else null
+                    }
+                }
+            } else {
+                currRank.loss?.let {
+                    if (it === rankFixListRecord) {
+                        currRank.loss =
+                            if (nextInFix.rank === currRank && nextInFix.node.isPassive()) nextInFix
+                            else null
+                    }
+                }
+            }
+            rankFixListRecord!!.rank = newRank
+            rankRankListRecord = null
+        } else if (isActive()) {
+            rankRankListRecord = newRank
+            rankFixListRecord = null
+        }
     }
 
     fun setActive(activeRecord: ActiveRecord, zeroRank: RankListRecord<T>) {

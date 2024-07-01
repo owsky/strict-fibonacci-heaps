@@ -53,5 +53,8 @@ fun main() {
     h.insert(9)
     h.insert(4)
     h.insert(1)
-    h.decreaseKey(1, 0)
+    h.insert(2)
+    h.insert(6)
+    h.insert(7)
+    //    h.decreaseKey(1, 0)
 }

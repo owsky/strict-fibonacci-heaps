@@ -7,6 +7,16 @@ import heaps.strict_fibonacci_heap.utils.removeFromCircularList
 fun <T : Comparable<T>> link(x: NodeRecord<T>, y: NodeRecord<T>) {
     val previousParent = x.parent
     x.parent = y
+
+    // if previous parent left child is x, update left child pointer
+    previousParent?.let {
+        if (it.leftChild === x) {
+            val nextChild = it.leftChild!!.right
+            previousParent.leftChild = if (nextChild === x) null else nextChild
+        }
+    }
+
+    // remove x from siblings
     removeFromCircularList(x)
 
     // if both x and its previous parent are active, decrease the parent rank

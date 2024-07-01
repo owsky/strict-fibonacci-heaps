@@ -2,7 +2,6 @@ package heaps.strict_fibonacci_heap.transformations
 
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
-import heaps.strict_fibonacci_heap.utils.fixListRemove
 import heaps.strict_fibonacci_heap.utils.insertIntoCircularList
 import heaps.strict_fibonacci_heap.utils.moveToActiveRoots
 import heaps.strict_fibonacci_heap.utils.removeFromCircularList
@@ -30,22 +29,13 @@ fun <T : Comparable<T>> rootDegreeReduction(
     if (heapRecord.root!!.leftChild !== x) {
         removeFromCircularList(x)
         insertIntoCircularList(
-            heapRecord.root!!.leftChild!!.right!!, x, heapRecord.root!!.leftChild!!)
+            heapRecord.root!!.leftChild!!.left!!, x, heapRecord.root!!.leftChild!!)
         heapRecord.root!!.leftChild = x
     }
 
     // link z to y, y to x
     link(z, y)
     link(y, x)
-
-    // make x the leftmost child of the root
-    val root = heapRecord.root!!
-    x.parent = root
-    root.leftChild?.let { firstChild ->
-        val lastChild = firstChild.left!!
-        insertIntoCircularList(lastChild, x, firstChild)
-    }
-    root.leftChild = x
 
     // assign loss zero and rank one to x
     x.loss = 0u
@@ -59,25 +49,35 @@ fun <T : Comparable<T>> rootDegreeReduction(
 
     // adjust fix-list for x (changed rank)
     moveToActiveRoots(x, heapRecord)
-
-    // adjust fix-list for y (remove from it if present)
-    y.rankFixListRecord?.let { fixListNode ->
-        fixListRemove(fixListNode, heapRecord)
-        y.rankFixListRecord = null
-    }
 }
 
 fun <T : Comparable<T>> canPerformRootDegreeReduction(heapRecord: HeapRecord<T>): Boolean {
+    // check if root has children
     val firstChild = heapRecord.root?.leftChild ?: return false
+
+    // check if non-linkable child exists
+    val nonLinkableChild = heapRecord.nonLinkableChild ?: return false
+
+    if (nonLinkableChild.parent !== heapRecord.root!!)
+        throw RuntimeException("Non-linkable child points to a node whose parent is not the root")
+
     val fstLastChild = firstChild.left!!
     val sndLastChild = fstLastChild.left!!
     val trdLastChild = sndLastChild.left!!
-    return fstLastChild !== sndLastChild &&
-        fstLastChild !== trdLastChild &&
-        sndLastChild !== trdLastChild &&
-        !fstLastChild.isActive() &&
-        !sndLastChild.isActive() &&
-        !trdLastChild.isActive()
+
+    // check whether children are all distinct
+    if (fstLastChild === sndLastChild ||
+        fstLastChild === trdLastChild ||
+        sndLastChild === trdLastChild)
+        return false
+
+    // check whether last and second last children are the first non-linkable child
+    if (sndLastChild === nonLinkableChild || fstLastChild === nonLinkableChild) return false
+
+    // check whether all three children are passive and linkable
+    return fstLastChild.isPassiveLinkable() &&
+        sndLastChild.isPassiveLinkable() &&
+        trdLastChild.isPassiveLinkable()
 }
 
 fun <T : Comparable<T>> performRootDegreeReduction(heapRecord: HeapRecord<T>) {

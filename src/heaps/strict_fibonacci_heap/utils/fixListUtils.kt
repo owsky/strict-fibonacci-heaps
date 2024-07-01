@@ -4,12 +4,44 @@ import heaps.strict_fibonacci_heap.auxiliary_structures.FixListRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 
+fun <T : Comparable<T>> fixListCut(x: FixListRecord<T>, heapRecord: HeapRecord<T>) {
+    val a = x.left
+    val b = x.right
+    when {
+        // case 1: there is only one item in the fix-list
+        a === x && x === b -> {
+            heapRecord.fixList = null
+        }
+
+        // case 2: there are exactly two items in the fix-list
+        a === b -> {
+            heapRecord.fixList = a
+            a.left = a
+            a.right = a
+        }
+
+        // case 3: there are more than two items in the fix-list
+        else -> {
+            a.right = b
+            b.left = a
+        }
+    }
+}
+
 fun <T : Comparable<T>> fixListRemove(x: FixListRecord<T>, heapRecord: HeapRecord<T>) {
-    val beforeX = x.left
-    val afterX = x.right
-    if (heapRecord.singles === x) heapRecord.singles = afterX
-    beforeX.right = afterX
-    afterX.left = beforeX
+    val a = x.left
+    val b = x.right
+    if (heapRecord.singles === x) {
+        heapRecord.singles = if (!b.node.isActiveRoot()) b else null
+    }
+
+    fixListCut(x, heapRecord)
+
+    val xRank = x.node.getRank()
+    --xRank.refCount
+
+    x.node.rankFixListRecord = null
+    x.node.rankRankListRecord = null
 }
 
 fun <T : Comparable<T>> fixListMove(
@@ -19,7 +51,7 @@ fun <T : Comparable<T>> fixListMove(
     heapRecord: HeapRecord<T>
 ) {
     // cut x from the list
-    fixListRemove(x, heapRecord)
+    fixListCut(x, heapRecord)
 
     // paste x between new boundaries
     x.left = left
@@ -30,7 +62,10 @@ fun <T : Comparable<T>> fixListMove(
 
 // x is an active root in part 2 or has just become an active root
 fun <T : Comparable<T>> moveToActiveRoots(x: NodeRecord<T>, heapRecord: HeapRecord<T>) {
-    val xFix = x.rankFixListRecord ?: FixListRecord(x, x.rankRankListRecord!!)
+    if (x.rankFixListRecord == null) {
+        x.rankFixListRecord = FixListRecord(x, x.rankRankListRecord!!)
+    }
+    val xFix = x.rankFixListRecord!!
     val xRank = xFix.rank
     val xRankActiveRoot = xRank.activeRoots
 
@@ -43,12 +78,11 @@ fun <T : Comparable<T>> moveToActiveRoots(x: NodeRecord<T>, heapRecord: HeapReco
 
         if (heapRecord.fixList!!.node.isActiveRoot()) {
             // if fix list points to an active root, parts 3 and 4 are empty
-            fixListMove(
-                x.rankFixListRecord!!, heapRecord.fixList!!.left, heapRecord.fixList!!, heapRecord)
+            fixListMove(xFix, heapRecord.fixList!!, heapRecord.fixList!!.right, heapRecord)
+            heapRecord.fixList = xFix
         } else {
             // use singles to reach part 2
-            fixListMove(
-                x.rankFixListRecord!!, heapRecord.singles!!.left, heapRecord.singles!!, heapRecord)
+            fixListMove(xFix, heapRecord.singles!!.left, heapRecord.singles!!, heapRecord)
         }
     } else {
         // if there is at least one active root of this rank
@@ -57,13 +91,12 @@ fun <T : Comparable<T>> moveToActiveRoots(x: NodeRecord<T>, heapRecord: HeapReco
             // if next is also an active root
             if (nextInFix.rank === xRank) {
                 // if next active root has the same rank, put x in-between
-                fixListMove(x.rankFixListRecord!!, xRankActiveRoot, nextInFix, heapRecord)
+                fixListMove(xFix, xRankActiveRoot, nextInFix, heapRecord)
             } else {
                 // if there is only one active root of this rank, move both to part 1
                 fixListMove(
                     xRankActiveRoot, heapRecord.fixList!!, heapRecord.fixList!!.right, heapRecord)
-                fixListMove(
-                    x.rankFixListRecord!!, xRankActiveRoot, xRankActiveRoot.right, heapRecord)
+                fixListMove(xFix, xRankActiveRoot, xRankActiveRoot.right, heapRecord)
             }
         }
     }
