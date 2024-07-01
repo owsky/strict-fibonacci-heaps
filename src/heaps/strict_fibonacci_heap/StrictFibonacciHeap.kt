@@ -20,6 +20,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         if (heapRecord.root == null) {
             heapRecord.root = NodeRecord(item)
             heapRecord.size = 1
+            lookup[item] = heapRecord.root!!
         } else {
             val newHeap = HeapRecord(item)
             meld(newHeap)
@@ -57,13 +58,18 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         link(v, u)
 
         // merge queues
-        mergeQueues(smallerHeap, v, biggerHeap)
+        val newQueueHead = mergeQueues(smallerHeap, v, biggerHeap)
 
         if (heapRecord !== biggerHeap) {
             heapRecord = biggerHeap
         }
+
+        if (heapRecord.nonLinkableChild == null && !v.isActive() && v.leftChild == null)
+            heapRecord.nonLinkableChild = v
+
         heapRecord.size = newSize
         heapRecord.root = u
+        heapRecord.qHead = newQueueHead
 
         // do one active root reduction and one root degree reduction if possible
         var rootDegreeReductionCounter = 0

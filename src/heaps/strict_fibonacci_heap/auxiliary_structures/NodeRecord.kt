@@ -5,7 +5,7 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
     var right: NodeRecord<T>? = null
     var parent: NodeRecord<T>? = null
     var leftChild: NodeRecord<T>? = null
-    var active: ActiveRecord? = null
+    private var active: ActiveRecord? = null
     var qPrev: NodeRecord<T>? = null
     var qNext: NodeRecord<T>? = null
     var loss: UInt? = null
@@ -33,40 +33,49 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
     }
 
     fun increaseRank() {
-        var nextRank: RankListRecord<T>? = null
-        if (isInFixList()) nextRank = rankFixListRecord!!.rank.inc ?: RankListRecord()
-        else if (isActive()) nextRank = rankRankListRecord!!.inc ?: RankListRecord()
+        val currRank = getRank()
+        val nextRank: RankListRecord<T>
+        // if next rank doesn't exist, create it
+        if (currRank.inc == null) {
+            nextRank = RankListRecord()
+            currRank.inc = nextRank
+            nextRank.dec = currRank
+        } else {
+            nextRank = currRank.inc!!
+        }
         setRank(nextRank)
     }
 
     fun decreaseRank() {
-        var prevRank: RankListRecord<T>? = null
-        if (isInFixList()) prevRank = rankFixListRecord!!.rank.dec!!
-        else if (isActive()) prevRank = rankRankListRecord!!
+        val prevRank: RankListRecord<T> =
+            if (isInFixList()) rankFixListRecord!!.rank.dec!!
+            else if (isActive()) rankRankListRecord!!
+            else
+                throw RuntimeException(
+                    "Trying to decrease a node's rank whose rank is already zero")
         setRank(prevRank)
     }
 
-    fun setRank(newRank: RankListRecord<T>?) {
-        if (newRank == null)
-            throw IllegalAccessException(
-                "Trying to access the rank pointer for a node which isn't an active root nor an active node with positive loss")
-        if (isInFixList()) {
-            val fix = rankFixListRecord!!
-            --fix.rank.refCount
-            ++newRank.refCount
-            rankFixListRecord!!.rank = newRank
-        } else if (isActive()) {
-            val prevRank = rankRankListRecord!!
-            --prevRank.refCount
-            ++newRank.refCount
-            rankRankListRecord = newRank
-        }
+    fun setRank(newRank: RankListRecord<T>) {
+        val currRank = getRank()
+        --currRank.refCount
+        ++newRank.refCount
+        if (isInFixList()) rankFixListRecord!!.rank = newRank
+        else if (isActive()) rankRankListRecord = newRank
     }
 
     fun setActive(activeRecord: ActiveRecord, zeroRank: RankListRecord<T>) {
         active = activeRecord
+        ++active!!.refCount
         rankFixListRecord = FixListRecord(this, zeroRank)
         rankRankListRecord = zeroRank
         ++rankRankListRecord!!.refCount
+    }
+
+    fun setPassive() {
+        --active!!.refCount
+        active = null
+        val rank = getRank()
+        --rank.refCount
     }
 }

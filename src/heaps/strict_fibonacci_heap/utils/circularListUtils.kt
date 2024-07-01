@@ -16,9 +16,11 @@ fun <T : Comparable<T>> insertIntoCircularList(
 fun <T : Comparable<T>> removeFromCircularList(x: NodeRecord<T>) {
     val a = x.left
     val b = x.right
-    if (a != x) {
-        a?.right = b
-        b?.right = a
+    if (a != null && b != null && a != x) {
+        if (a.right !== x || b.left !== x)
+            throw RuntimeException("The left and right pointers are mismatched")
+        a.right = b
+        b.left = a
     }
     x.left = null
     x.right = null

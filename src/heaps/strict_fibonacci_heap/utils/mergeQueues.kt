@@ -3,7 +3,11 @@ package heaps.strict_fibonacci_heap.utils
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 
-fun <T : Comparable<T>> mergeQueues(h1: HeapRecord<T>, v: NodeRecord<T>, h2: HeapRecord<T>) {
+fun <T : Comparable<T>> mergeQueues(
+    h1: HeapRecord<T>,
+    v: NodeRecord<T>,
+    h2: HeapRecord<T>
+): NodeRecord<T> {
     val h1QueueHead = h1.qHead
     val h2QueueHead = h2.qHead
 
@@ -38,4 +42,5 @@ fun <T : Comparable<T>> mergeQueues(h1: HeapRecord<T>, v: NodeRecord<T>, h2: Hea
         h1QueueHead.qPrev = h2QueueTail
         h2QueueTail.qNext = h1QueueHead
     }
+    return h1.qHead!!
 }

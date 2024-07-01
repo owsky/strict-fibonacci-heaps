@@ -30,17 +30,29 @@ fun <T : Comparable<T>> fixListMove(
 
 // x is an active root in part 2 or has just become an active root
 fun <T : Comparable<T>> moveToActiveRoots(x: NodeRecord<T>, heapRecord: HeapRecord<T>) {
-    val xFixList = x.rankFixListRecord ?: FixListRecord(x, x.rankRankListRecord!!)
-    val xRank = xFixList.rank
+    val xFix = x.rankFixListRecord ?: FixListRecord(x, x.rankRankListRecord!!)
+    val xRank = xFix.rank
     val xRankActiveRoot = xRank.activeRoots
-    if (xRankActiveRoot == null) {
+
+    // if the fix list is empty, just point to xFix
+    if (heapRecord.fixList == null) {
+        heapRecord.fixList = xFix
+    } else if (xRankActiveRoot == null) {
         // if there are no active roots of this rank, put in part 2
-        fixListMove(
-            x.rankFixListRecord!!, heapRecord.singles!!.left, heapRecord.singles!!, heapRecord)
-        xRank.activeRoots = xFixList
+        xRank.activeRoots = xFix
+
+        if (heapRecord.fixList!!.node.isActiveRoot()) {
+            // if fix list points to an active root, parts 3 and 4 are empty
+            fixListMove(
+                x.rankFixListRecord!!, heapRecord.fixList!!.left, heapRecord.fixList!!, heapRecord)
+        } else {
+            // use singles to reach part 2
+            fixListMove(
+                x.rankFixListRecord!!, heapRecord.singles!!.left, heapRecord.singles!!, heapRecord)
+        }
     } else {
         // if there is at least one active root of this rank
-        val nextInFix = xFixList.right
+        val nextInFix = xFix.right
         if (nextInFix.node.isActiveRoot()) {
             // if next is also an active root
             if (nextInFix.rank === xRank) {

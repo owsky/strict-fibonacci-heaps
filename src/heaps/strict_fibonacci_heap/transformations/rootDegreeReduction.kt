@@ -5,6 +5,7 @@ import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import heaps.strict_fibonacci_heap.utils.fixListRemove
 import heaps.strict_fibonacci_heap.utils.insertIntoCircularList
 import heaps.strict_fibonacci_heap.utils.moveToActiveRoots
+import heaps.strict_fibonacci_heap.utils.removeFromCircularList
 
 fun <T : Comparable<T>> rootDegreeReduction(
     a: NodeRecord<T>,
@@ -21,6 +22,17 @@ fun <T : Comparable<T>> rootDegreeReduction(
     // mark x and y as active
     x.setActive(heapRecord.activeRecord, heapRecord.rankList)
     y.setActive(heapRecord.activeRecord, heapRecord.rankList)
+
+    // check if non-linkable child needs update
+    heapRecord.nonLinkableChild?.let { if (it.isActive()) heapRecord.nonLinkableChild = null }
+
+    // x is now an active root, so it becomes the leftmost child
+    if (heapRecord.root!!.leftChild !== x) {
+        removeFromCircularList(x)
+        insertIntoCircularList(
+            heapRecord.root!!.leftChild!!.right!!, x, heapRecord.root!!.leftChild!!)
+        heapRecord.root!!.leftChild = x
+    }
 
     // link z to y, y to x
     link(z, y)
@@ -69,7 +81,7 @@ fun <T : Comparable<T>> canPerformRootDegreeReduction(heapRecord: HeapRecord<T>)
 }
 
 fun <T : Comparable<T>> performRootDegreeReduction(heapRecord: HeapRecord<T>) {
-    val fstLastChild = heapRecord.root!!.leftChild!!
+    val fstLastChild = heapRecord.root!!.leftChild!!.left!!
     val sndLastChild = fstLastChild.left!!
     val trdLastChild = sndLastChild.left!!
     rootDegreeReduction(fstLastChild, sndLastChild, trdLastChild, heapRecord)

@@ -5,8 +5,18 @@ import heaps.strict_fibonacci_heap.utils.insertIntoCircularList
 import heaps.strict_fibonacci_heap.utils.removeFromCircularList
 
 fun <T : Comparable<T>> link(x: NodeRecord<T>, y: NodeRecord<T>) {
+    val previousParent = x.parent
     x.parent = y
     removeFromCircularList(x)
+
+    // if both x and its previous parent are active, decrease the parent rank
+    previousParent?.let { if (x.isActive() && it.isActive()) it.decreaseRank() }
+
+    // if the previous parent is active, increase its loss
+    previousParent?.let { if (it.isActive()) it.loss = it.loss!! + 1u }
+
+    // if both x and y are active, increase the rank of y
+    if (x.isActive() && y.isActive()) y.increaseRank()
 
     if (y.leftChild == null) {
         // if y has no children
