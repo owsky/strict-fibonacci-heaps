@@ -45,17 +45,14 @@ fun <T : Comparable<T>> rootDegreeReduction(
 
     // adjust fix-list for x, since it's now an active root
     moveToActiveRoots(x, heapRecord)
+
+    // if heapRecord's non-linkable child is not set, set it to x
+    if (heapRecord.nonLinkableChild == null) heapRecord.nonLinkableChild = x
 }
 
 fun <T : Comparable<T>> canPerformRootDegreeReduction(heapRecord: HeapRecord<T>): Boolean {
     // check if root has children
     val firstChild = heapRecord.root?.leftChild ?: return false
-
-    // check if non-linkable child exists
-    val nonLinkableChild = heapRecord.nonLinkableChild ?: return false
-
-    if (nonLinkableChild.parent !== heapRecord.root!!)
-        throw RuntimeException("Non-linkable child points to a node whose parent is not the root")
 
     val fstLastChild = firstChild.left!!
     val sndLastChild = fstLastChild.left!!
@@ -66,9 +63,6 @@ fun <T : Comparable<T>> canPerformRootDegreeReduction(heapRecord: HeapRecord<T>)
         fstLastChild === trdLastChild ||
         sndLastChild === trdLastChild)
         return false
-
-    // check whether last and second last children are the first non-linkable child
-    if (sndLastChild === nonLinkableChild || fstLastChild === nonLinkableChild) return false
 
     // check whether all three children are passive and linkable
     return fstLastChild.isPassiveLinkable() &&

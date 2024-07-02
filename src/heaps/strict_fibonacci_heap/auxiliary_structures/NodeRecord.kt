@@ -231,9 +231,11 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         loss = newLoss
     }
 
+    // demote an active root to being just active
     fun demoteActiveRoot(heapRecord: HeapRecord<T>) {
         val xFix = rank as FixListRecord<T>
         if (xFix.rank.activeRoots === xFix) {
+            // if the node's rank's activeRoots pointer points to this, then update it
             val nextInFix = xFix.right!!
             if (nextInFix.rank === xFix.rank) xFix.rank.activeRoots = nextInFix
             else xFix.rank.activeRoots = null

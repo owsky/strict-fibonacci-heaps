@@ -70,7 +70,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         heapRecord.qHead = newQueueHead
 
         if (previousRoot !== heapRecord.root) heapRecord.nonLinkableChild = null
-        if (heapRecord.nonLinkableChild == null && !v.isActive() && v.leftChild == null)
+        if (heapRecord.nonLinkableChild == null && !v.isPassiveLinkable())
             heapRecord.nonLinkableChild = v
 
         // do one active root reduction and one root degree reduction if possible

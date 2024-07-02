@@ -18,7 +18,7 @@ fun <T : Comparable<T>> link(x: NodeRecord<T>, y: NodeRecord<T>, heapRecord: Hea
         }
     }
 
-    // if y or previousParent is the root, check if nonLinkableChild needs updating
+    // check if nonLinkableChild needs updating
     if (y === heapRecord.root && heapRecord.nonLinkableChild == null && !x.isPassiveLinkable())
         heapRecord.nonLinkableChild = x
     else if (previousParent === heapRecord.root && heapRecord.nonLinkableChild === x) {
@@ -36,6 +36,13 @@ fun <T : Comparable<T>> link(x: NodeRecord<T>, y: NodeRecord<T>, heapRecord: Hea
         if (x.isActive() && it.isActive()) it.decreaseRank()
         // if the previous parent is active but not an active root, increase its loss
         if (it.isActive() && !it.isActiveRoot()) it.setLoss(it.loss!! + 1u, heapRecord)
+        // if previousParent is the non-linkable child, check if it still is
+        if (previousParent === heapRecord.nonLinkableChild && previousParent.isPassiveLinkable()) {
+            val nextSibling = previousParent.right!!
+            heapRecord.nonLinkableChild =
+                if (nextSibling !== previousParent && !nextSibling.isPassiveLinkable()) nextSibling
+                else null
+        }
     }
 
     // if both x and y are active, increase the rank of y
