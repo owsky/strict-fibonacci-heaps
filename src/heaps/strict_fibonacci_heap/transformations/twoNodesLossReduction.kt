@@ -37,20 +37,20 @@ fun <T : Comparable<T>> twoNodesLossReduction(
     val z = y.parent!!
 
     // link y to x
-    link(y, x)
+    link(y, x, heapRecord)
 
     // increase the rank of x
     x.increaseRank()
 
     // set loss of x and y to zero
-    x.setLoss(0u)
-    y.setLoss(0u)
+    x.setLoss(0u, heapRecord)
+    y.setLoss(0u, heapRecord)
 
     // decrease the rank of z
     z.decreaseRank()
 
     // if z is not an active root, the loss is increased by one
-    if (!z.isActiveRoot()) z.setLoss(z.loss!! + 1u)
+    if (!z.isActiveRoot()) z.setLoss(z.loss!! + 1u, heapRecord)
 
     // adjust fix-list for x and y (loss is now zero)
     fixListRemove(x.rank as FixListRecord<T>, heapRecord)

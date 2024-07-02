@@ -12,6 +12,15 @@ fun <T : Comparable<T>> rootDegreeReduction(
     c: NodeRecord<T>,
     heapRecord: HeapRecord<T>
 ) {
+    if (!a.isPassiveLinkable() ||
+        !b.isPassiveLinkable() ||
+        !c.isPassiveLinkable() ||
+        a.parent !== heapRecord.root ||
+        b.parent !== heapRecord.root ||
+        c.parent !== heapRecord.root)
+        throw IllegalArgumentException(
+            "Root degree reduction can only be performed on three passive and linkable children of the root")
+
     // sort by key
     val (x, y, z) =
         listOf(a, b, c)
@@ -19,11 +28,8 @@ fun <T : Comparable<T>> rootDegreeReduction(
             .let { (first, second, third) -> Triple(first, second, third) }
 
     // mark x and y as active
-    x.setActive(heapRecord.activeRecord, heapRecord.rankList)
-    y.setActive(heapRecord.activeRecord, heapRecord.rankList)
-
-    // check if non-linkable child needs update
-    heapRecord.nonLinkableChild?.let { if (it.isActive()) heapRecord.nonLinkableChild = null }
+    x.setActiveFromPassive(heapRecord.activeRecord, heapRecord.rankList, heapRecord)
+    y.setActiveFromPassive(heapRecord.activeRecord, heapRecord.rankList, heapRecord)
 
     // x is now an active root, so it becomes the leftmost child
     if (heapRecord.root!!.leftChild !== x) {
@@ -34,21 +40,10 @@ fun <T : Comparable<T>> rootDegreeReduction(
     }
 
     // link z to y, y to x
-    link(z, y)
-    link(y, x)
+    link(z, y, heapRecord)
+    link(y, x, heapRecord)
 
-    // assign loss zero and rank one to x
-    x.setLoss(0u)
-    val zeroRank = heapRecord.rankList
-    x.setRank(zeroRank)
-    x.increaseRank()
-
-    // assign loss zero and rank zero to y
-    y.setLoss(0u)
-    y.setRank(zeroRank)
-
-    // adjust fix-list for x (changed rank)
-    x.setActiveRoot()
+    // adjust fix-list for x, since it's now an active root
     moveToActiveRoots(x, heapRecord)
 }
 

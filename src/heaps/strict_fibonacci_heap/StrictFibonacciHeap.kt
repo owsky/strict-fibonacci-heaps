@@ -56,7 +56,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
             u = y
             v = x
         }
-        link(v, u)
+        link(v, u, heapRecord)
 
         // merge queues
         val newQueueHead = mergeQueues(smallerHeap, v, biggerHeap)
@@ -114,11 +114,11 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
             val wasXActive = x.isActive()
             val wasXActiveRoot = x.isActiveRoot()
 
-            link(x, root)
+            link(x, root, heapRecord)
 
             if (wasXActive && !wasXActiveRoot) {
                 // x becomes an active root
-                x.setLoss(0u)
+                x.setLoss(0u, heapRecord)
                 moveToActiveRoots(x, heapRecord)
                 // decrease rank of y by one
                 y.decreaseRank()
@@ -126,7 +126,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
 
             // do a loss reduction if possible
             val lastInFix = heapRecord.fixList!!
-            val sndLastInFix = lastInFix.left
+            val sndLastInFix = lastInFix.left!!
             if (lastInFix.node.isActive() &&
                 !lastInFix.node.isActiveRoot() &&
                 lastInFix.node.loss!! >= 2u)
