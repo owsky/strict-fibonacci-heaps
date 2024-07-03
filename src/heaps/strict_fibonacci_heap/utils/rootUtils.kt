@@ -72,14 +72,31 @@ fun <T : Comparable<T>> setNewRoot(x: NodeRecord<T>, heapRecord: HeapRecord<T>) 
     // set the x's parent to null
     x.parent = null
 
-    // make all the other children of the root children of x
-    linkAllToRoot(previousRoot.leftChild, heapRecord)
-
     // rearrange root children in order to restore invariant I1: structure
     rearrangeRootChildren(heapRecord)
 
     // update non-linkable child pointer
     updateNonLinkableChild(heapRecord)
+
+    // make all the other children of the root children of x
+    linkAllToRoot(previousRoot.leftChild, heapRecord)
 }
 
-fun <T : Comparable<T>> rearrangeRootChildren(heapRecord: HeapRecord<T>) {}
+fun <T : Comparable<T>> rearrangeRootChildren(heapRecord: HeapRecord<T>) {
+    val root = heapRecord.root!!
+    val children: MutableList<NodeRecord<T>> = mutableListOf()
+    root.leftChild?.let { firstChild ->
+        children.add(firstChild)
+        var currentChild = firstChild.right!!
+        while (currentChild !== firstChild) {
+            children.add(currentChild)
+            currentChild = currentChild.right!!
+        }
+    }
+    children.forEach { child ->
+        removeFromCircularList(child)
+        child.parent = null
+    }
+    root.leftChild = null
+    children.forEach { child -> link(child, root, heapRecord) }
+}

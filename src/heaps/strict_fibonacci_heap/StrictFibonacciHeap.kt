@@ -90,10 +90,11 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
     }
 
     private fun deleteMin() {
+        --heapRecord.size
+        lookup.remove(heapRecord.root!!.item)
         if (heapRecord.root!!.leftChild == null) {
             // if the root is the only element
             heapRecord.root = null
-            --heapRecord.size
             return
         }
 
@@ -132,8 +133,10 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
     }
 
     override fun extractMin(): T {
-        val min = heapRecord.root?.item ?: throw NoSuchElementException("The heap is empty")
-        lookup.remove(min)
+        if (getSize() == 0) throw NoSuchElementException("The heap is empty")
+        val min =
+            heapRecord.root?.item
+                ?: throw IllegalStateException("The heap is not empty but the root is null")
         deleteMin()
         return min
     }

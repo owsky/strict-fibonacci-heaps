@@ -20,7 +20,7 @@ fun <T : Comparable<T>> twoNodesLossReduction(
     if (a.getRank() !== b.getRank())
         throw IllegalArgumentException(
             "Two nodes loss reduction can only be applied to active nodes of the same rank")
-    if (a.loss!! != b.loss!! || a.loss!! == 1u)
+    if (a.loss!! != b.loss!! || a.loss!! != 1u)
         throw IllegalArgumentException(
             "Two nodes loss reduction can only be applied to nodes with loss equal to 1")
 
@@ -39,18 +39,9 @@ fun <T : Comparable<T>> twoNodesLossReduction(
     // link y to x
     link(y, x, heapRecord)
 
-    // increase the rank of x
-    x.increaseRank(heapRecord)
-
     // set loss of x and y to zero
     x.setLoss(0u, heapRecord)
     y.setLoss(0u, heapRecord)
-
-    // decrease the rank of z
-    z.decreaseRank(heapRecord)
-
-    // if z is not an active root, the loss is increased by one
-    if (!z.isActiveRoot()) z.setLoss(z.loss!! + 1u, heapRecord)
 
     // adjust fix-list for x and y (loss is now zero)
     fixListRemove(x.rank as FixListRecord<T>, heapRecord)

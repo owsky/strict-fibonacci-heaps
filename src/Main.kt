@@ -3,6 +3,7 @@ import algorithms.prim
 import graph.Graph
 import graph.Node
 import heaps.HeapKind
+import heaps.strict_fibonacci_heap.StrictFibonacciHeap
 import kotlin.random.Random
 
 fun generateUniqueRandomIntegers(seed: Long, count: Int, range: IntRange): List<Int> {
@@ -53,24 +54,23 @@ fun runDijkstra(kind: HeapKind) {
 }
 
 fun main() {
-    runDijkstra(HeapKind.BINARY_HEAP)
-    runPrim(HeapKind.BINARY_HEAP)
-    runDijkstra(HeapKind.FIBONACCI_HEAP)
-    runPrim(HeapKind.FIBONACCI_HEAP)
+    //    runDijkstra(HeapKind.BINARY_HEAP)
+    //    runPrim(HeapKind.BINARY_HEAP)
+    //    runDijkstra(HeapKind.FIBONACCI_HEAP)
+    //    runPrim(HeapKind.FIBONACCI_HEAP)
 
-    //    val nums = generateUniqueRandomIntegers(1234L, 50, 0..100)
-    //    val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap(nums)
-    //    val extracted = ArrayList<Int>()
-    //    for (i in nums.indices) extracted.add(h.extractMin())
-    //    var sortedNums = nums.toMutableList()
-    //    sortedNums.sort()
-    //    sortedNums = sortedNums.subList(0, 5)
-    //    if (sortedNums != extracted) throw IllegalStateException("Heap is returning the wrong
-    // items")
-    //    else {
-    //        println(nums)
-    //        println(extracted)
-    //    }
+    val nums = generateUniqueRandomIntegers(1234L, 50, 0..100)
+    val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap(nums)
+    val extracted = ArrayList<Int>()
+    for (i in nums.indices) extracted.add(h.extractMin())
+    var sortedNums = nums.toMutableList()
+    sortedNums.sort()
+    sortedNums = sortedNums.subList(0, 5)
+    if (sortedNums != extracted) throw IllegalStateException("Heap is returning the wrong items")
+    else {
+        println(nums)
+        println(extracted)
+    }
 
     //    h.insert(5)
     //    h.insert(3)
