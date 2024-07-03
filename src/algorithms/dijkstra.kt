@@ -12,18 +12,18 @@ fun dijkstra(graph: Graph, s: Node, heapKind: HeapKind) {
     val x: MutableSet<Node> = HashSet()
     graph.initSingleSource(s)
     val nodes = graph.getNodes()
-    val heap: MinHeap<Node>
-    when (heapKind) {
-        HeapKind.BINARY_HEAP -> {
-            heap = BinaryHeap(nodes)
+    val heap: MinHeap<Node> =
+        when (heapKind) {
+            HeapKind.BINARY_HEAP -> {
+                BinaryHeap(nodes)
+            }
+            HeapKind.FIBONACCI_HEAP -> {
+                FibonacciHeap(nodes)
+            }
+            HeapKind.STRICT_FIBONACCI_HEAP -> {
+                StrictFibonacciHeap(nodes)
+            }
         }
-        HeapKind.FIBONACCI_HEAP -> {
-            heap = FibonacciHeap(nodes)
-        }
-        HeapKind.STRICT_FIBONACCI_HEAP -> {
-            heap = StrictFibonacciHeap(nodes)
-        }
-    }
 
     while (!heap.isEmpty()) {
         val wMin = heap.extractMin()

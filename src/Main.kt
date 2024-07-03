@@ -55,6 +55,8 @@ fun runDijkstra(kind: HeapKind) {
 fun main() {
     runDijkstra(HeapKind.BINARY_HEAP)
     runPrim(HeapKind.BINARY_HEAP)
+    runDijkstra(HeapKind.FIBONACCI_HEAP)
+    runPrim(HeapKind.FIBONACCI_HEAP)
 
     //    val nums = generateUniqueRandomIntegers(1234L, 50, 0..100)
     //    val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap(nums)

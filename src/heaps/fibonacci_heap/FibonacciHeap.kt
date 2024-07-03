@@ -7,9 +7,12 @@ import kotlin.math.sqrt
 // Implementation adapted from https://www.programiz.com/dsa/fibonacci-heap
 class FibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) : MinHeap<T>(items) {
     var min: Node<T>? = null
-    private var size: Int = 0
     private var found: Node<T>? = null
     private val lookup: HashSet<T> = hashSetOf()
+
+    init {
+        items.forEach { insert(it) }
+    }
 
     private fun insert(x: Node<T>) {
         if (min == null) {
@@ -23,7 +26,6 @@ class FibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) : Min
             min!!.left = x
             if (x.key < min!!.key) min = x
         }
-        size += 1
     }
 
     override fun insert(item: T) {
@@ -53,17 +55,16 @@ class FibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) : Min
             this.min = z.right
             this.consolidate()
         }
-        this.size -= 1
         lookup.remove(z.key)
         return z.key
     }
 
     override fun getSize(): Int {
-        return size
+        return lookup.size
     }
 
     override fun isEmpty(): Boolean {
-        return size == 0
+        return lookup.size == 0
     }
 
     override fun contains(key: T): Boolean {
@@ -72,7 +73,7 @@ class FibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) : Min
 
     private fun consolidate() {
         val phi = (1 + sqrt(5.0)) / 2
-        val dofn = (ln(size.toDouble()) / ln(phi)).toInt()
+        val dofn = (ln(lookup.size.toDouble()) / ln(phi)).toInt()
         val a = arrayOfNulls<Node<T>>(dofn + 1)
         for (i in 0..dofn) a[i] = null
         var w = min
@@ -188,27 +189,6 @@ class FibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) : Min
                 cut(y, z)
                 cascadingCut(z)
             }
-        }
-    }
-
-    companion object {
-        fun <T : Comparable<T>> mergeHeap(
-            h1: FibonacciHeap<T>,
-            h2: FibonacciHeap<T>,
-            h3: FibonacciHeap<T>
-        ) {
-            h3.min = h1.min
-
-            if (h1.min != null && h2.min != null) {
-                val t1 = h1.min!!.left
-                val t2 = h2.min!!.left
-                h1.min!!.left = t2
-                t1!!.right = h2.min
-                h2.min!!.left = t1
-                t2!!.right = h1.min
-            }
-            if (h1.min == null || (h2.min != null && h2.min!!.key < h1.min!!.key)) h3.min = h2.min
-            h3.size = h1.size + h2.size
         }
     }
 }
