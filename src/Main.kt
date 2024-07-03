@@ -1,57 +1,5 @@
-import algorithms.dijkstra
-import algorithms.prim
-import graph.Graph
-import graph.Node
-import heaps.HeapKind
 import heaps.strict_fibonacci_heap.StrictFibonacciHeap
-import kotlin.random.Random
-
-fun generateUniqueRandomIntegers(seed: Long, count: Int, range: IntRange): List<Int> {
-    if (range.last - range.first < count) throw IllegalArgumentException("Range is too narrow")
-    val random = Random(seed)
-    val uniqueIntegers = mutableSetOf<Int>()
-
-    while (uniqueIntegers.size < count) uniqueIntegers.add(
-        random.nextInt(range.first, range.last + 1))
-
-    return uniqueIntegers.toList()
-}
-
-fun createGraph(): Pair<Graph, Node> {
-    val graph = Graph(true)
-    val nodes: MutableList<Node> = ArrayList()
-
-    for (i in 0..4) {
-        nodes.add(Node(i))
-    }
-
-    graph.addEdge(nodes[0], nodes[1], 5.0)
-    graph.addEdge(nodes[0], nodes[3], 2.0)
-    graph.addEdge(nodes[1], nodes[2], 8.0)
-    graph.addEdge(nodes[1], nodes[4], 9.0)
-    graph.addEdge(nodes[3], nodes[1], 4.0)
-    graph.addEdge(nodes[2], nodes[4], 6.0)
-
-    return graph to nodes[0]
-}
-
-fun runPrim(kind: HeapKind) {
-    println("Running Prim's algorithm")
-
-    val (graph, root) = createGraph()
-
-    prim(graph, root, kind)
-    graph.printNodesDetails()
-}
-
-fun runDijkstra(kind: HeapKind) {
-    println("Running Dijkstra's algorithm")
-
-    val (graph, root) = createGraph()
-
-    dijkstra(graph, root, kind)
-    graph.printNodesDetails()
-}
+import visualization.visualizeTree
 
 fun main() {
     //    runDijkstra(HeapKind.BINARY_HEAP)
@@ -59,28 +7,23 @@ fun main() {
     //    runDijkstra(HeapKind.FIBONACCI_HEAP)
     //    runPrim(HeapKind.FIBONACCI_HEAP)
 
-    val nums = generateUniqueRandomIntegers(1234L, 50, 0..100)
+    var nums = generateIntegers(1234L, 20, 0..100)
+    nums =
+        intArrayOf(17, 27, 28, 11, 10, 2, 30, 26, 1, 22, 23, 7, 13, 24, 3, 12, 25, 6, 29, 21)
+            .toList()
     val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap(nums)
-    val extracted = ArrayList<Int>()
-    for (i in nums.indices) extracted.add(h.extractMin())
-    var sortedNums = nums.toMutableList()
-    sortedNums.sort()
-    sortedNums = sortedNums.subList(0, 5)
-    if (sortedNums != extracted) throw IllegalStateException("Heap is returning the wrong items")
-    else {
-        println(nums)
-        println(extracted)
-    }
 
-    //    h.insert(5)
-    //    h.insert(3)
-    //    h.insert(10)
-    //    h.insert(8)
-    //    h.insert(9)
-    //    h.insert(4)
-    //    h.insert(1)
-    //    h.insert(2)
-    //    h.insert(6)
-    //    h.insert(7)
-    //    h.decreaseKey(1, 0)
+    visualizeTree(h)
+
+    //    val extracted = ArrayList<Int>()
+    //    for (i in nums.indices) extracted.add(h.extractMin())
+    //    var sortedNums = nums.toMutableList()
+    //    sortedNums.sort()
+    //    sortedNums = sortedNums.subList(0, 5)
+    //    if (sortedNums != extracted) throw IllegalStateException("Heap is returning the wrong
+    // items")
+    //    else {
+    //        println(nums)
+    //        println(extracted)
+    //    }
 }

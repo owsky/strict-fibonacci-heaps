@@ -21,6 +21,8 @@ fun <T : Comparable<T>> rootDegreeReduction(
         throw IllegalArgumentException(
             "Root degree reduction can only be performed on three passive and linkable children of the root")
 
+    println("Performing a root degree reduction with nodes ${a.item}, ${b.item} and ${c.item}")
+
     // sort by key
     val (x, y, z) =
         listOf(a, b, c)

@@ -10,6 +10,8 @@ fun <T : Comparable<T>> oneNodeLossReduction(x: NodeRecord<T>, heapRecord: HeapR
         throw IllegalArgumentException(
             "Trying to perform one node loss reduction on a node which doesn't have >= 2 loss")
 
+    println("Performing a one node loss reduction with node ${x.item}")
+
     val y = x.parent!!
     val root = heapRecord.root!!
 

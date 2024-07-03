@@ -8,11 +8,14 @@ import heaps.strict_fibonacci_heap.utils.*
 
 class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) :
     MinHeap<T>(items) {
-    private var heapRecord = HeapRecord<T>()
+    var heapRecord = HeapRecord<T>()
     private val lookup: MutableMap<T, NodeRecord<T>> = mutableMapOf()
 
     init {
-        items.forEach { item -> insert(item) }
+        items.forEach { item ->
+            //
+            insert(item)
+        }
     }
 
     override fun insert(item: T) {
@@ -46,15 +49,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
 
         smallerHeap.activeRecord.flag = false
 
-        val u: NodeRecord<T>
-        val v: NodeRecord<T>
-        if (x.item <= y.item) {
-            u = x
-            v = y
-        } else {
-            u = y
-            v = x
-        }
+        val (u, v) = sortPair(x, y)
         link(v, u, heapRecord)
 
         // merge queues

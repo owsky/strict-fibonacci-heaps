@@ -1,0 +1,11 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Main" type="JetRunConfigurationType">
+    <option name="MAIN_CLASS_NAME" value="MainKt" />
+    <module name="strict-fib-kotl" />
+    <shortenClasspath name="NONE" />
+    <option name="VM_PARAMETERS" value="-Dsun.java2d.opengl=True" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>

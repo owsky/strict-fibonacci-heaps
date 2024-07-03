@@ -8,6 +8,7 @@ import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import heaps.strict_fibonacci_heap.utils.fixListRemove
 import heaps.strict_fibonacci_heap.utils.moveToActiveRoots
 import heaps.strict_fibonacci_heap.utils.moveToPositiveLoss
+import heaps.strict_fibonacci_heap.utils.sortPair
 
 fun <T : Comparable<T>> twoNodesLossReduction(
     a: NodeRecord<T>,
@@ -24,15 +25,9 @@ fun <T : Comparable<T>> twoNodesLossReduction(
         throw IllegalArgumentException(
             "Two nodes loss reduction can only be applied to nodes with loss equal to 1")
 
-    val x: NodeRecord<T>
-    val y: NodeRecord<T>
-    if (a.item <= b.item) {
-        x = a
-        y = b
-    } else {
-        x = b
-        y = a
-    }
+    println("Performing a two nodes loss reduction with nodes ${a.item} and ${b.item}")
+
+    val (x, y) = sortPair(a, b)
 
     val z = y.parent!!
 
