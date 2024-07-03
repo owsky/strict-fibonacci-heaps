@@ -5,14 +5,25 @@ import graph.Node
 import heaps.HeapKind
 import heaps.MinHeap
 import heaps.binary_heap.BinaryHeap
+import heaps.fibonacci_heap.FibonacciHeap
 import heaps.strict_fibonacci_heap.StrictFibonacciHeap
 
 fun dijkstra(graph: Graph, s: Node, heapKind: HeapKind) {
     val x: MutableSet<Node> = HashSet()
     graph.initSingleSource(s)
     val nodes = graph.getNodes()
-    val heap: MinHeap<Node> =
-        if (heapKind == HeapKind.BINARY_HEAP) BinaryHeap(nodes) else StrictFibonacciHeap(nodes)
+    val heap: MinHeap<Node>
+    when (heapKind) {
+        HeapKind.BINARY_HEAP -> {
+            heap = BinaryHeap(nodes)
+        }
+        HeapKind.FIBONACCI_HEAP -> {
+            heap = FibonacciHeap(nodes)
+        }
+        HeapKind.STRICT_FIBONACCI_HEAP -> {
+            heap = StrictFibonacciHeap(nodes)
+        }
+    }
 
     while (!heap.isEmpty()) {
         val wMin = heap.extractMin()

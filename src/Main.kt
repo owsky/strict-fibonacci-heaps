@@ -3,7 +3,6 @@ import algorithms.prim
 import graph.Graph
 import graph.Node
 import heaps.HeapKind
-import heaps.strict_fibonacci_heap.StrictFibonacciHeap
 import kotlin.random.Random
 
 fun generateUniqueRandomIntegers(seed: Long, count: Int, range: IntRange): List<Int> {
@@ -35,40 +34,41 @@ fun createGraph(): Pair<Graph, Node> {
     return graph to nodes[0]
 }
 
-fun runPrim() {
+fun runPrim(kind: HeapKind) {
     println("Running Prim's algorithm")
 
     val (graph, root) = createGraph()
 
-    prim(graph, root, HeapKind.BINARY_HEAP)
+    prim(graph, root, kind)
     graph.printNodesDetails()
 }
 
-fun runDijkstra() {
+fun runDijkstra(kind: HeapKind) {
     println("Running Dijkstra's algorithm")
 
     val (graph, root) = createGraph()
 
-    dijkstra(graph, root, HeapKind.BINARY_HEAP)
+    dijkstra(graph, root, kind)
     graph.printNodesDetails()
 }
 
 fun main() {
-    //    runDijkstra()
-    //    runPrim()
+    runDijkstra(HeapKind.BINARY_HEAP)
+    runPrim(HeapKind.BINARY_HEAP)
 
-    val nums = generateUniqueRandomIntegers(1234L, 50, 0..100)
-    val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap(nums)
-    val extracted = ArrayList<Int>()
-    for (i in nums.indices) extracted.add(h.extractMin())
-    var sortedNums = nums.toMutableList()
-    sortedNums.sort()
-    sortedNums = sortedNums.subList(0, 5)
-    if (sortedNums != extracted) throw IllegalStateException("Heap is returning the wrong items")
-    else {
-        println(nums)
-        println(extracted)
-    }
+    //    val nums = generateUniqueRandomIntegers(1234L, 50, 0..100)
+    //    val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap(nums)
+    //    val extracted = ArrayList<Int>()
+    //    for (i in nums.indices) extracted.add(h.extractMin())
+    //    var sortedNums = nums.toMutableList()
+    //    sortedNums.sort()
+    //    sortedNums = sortedNums.subList(0, 5)
+    //    if (sortedNums != extracted) throw IllegalStateException("Heap is returning the wrong
+    // items")
+    //    else {
+    //        println(nums)
+    //        println(extracted)
+    //    }
 
     //    h.insert(5)
     //    h.insert(3)
