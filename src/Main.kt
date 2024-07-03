@@ -4,6 +4,18 @@ import graph.Graph
 import graph.Node
 import heaps.HeapKind
 import heaps.strict_fibonacci_heap.StrictFibonacciHeap
+import kotlin.random.Random
+
+fun generateUniqueRandomIntegers(seed: Long, count: Int, range: IntRange): List<Int> {
+    if (range.last - range.first < count) throw IllegalArgumentException("Range is too narrow")
+    val random = Random(seed)
+    val uniqueIntegers = mutableSetOf<Int>()
+
+    while (uniqueIntegers.size < count) uniqueIntegers.add(
+        random.nextInt(range.first, range.last + 1))
+
+    return uniqueIntegers.toList()
+}
 
 fun createGraph(): Pair<Graph, Node> {
     val graph = Graph(true)
@@ -45,16 +57,28 @@ fun main() {
     //    runDijkstra()
     //    runPrim()
 
-    val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap()
-    h.insert(5)
-    h.insert(3)
-    h.insert(10)
-    h.insert(8)
-    h.insert(9)
-    h.insert(4)
-    h.insert(1)
-    h.insert(2)
-    h.insert(6)
-    h.insert(7)
+    val nums = generateUniqueRandomIntegers(1234L, 50, 0..100)
+    val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap(nums)
+    val extracted = ArrayList<Int>()
+    for (i in nums.indices) extracted.add(h.extractMin())
+    var sortedNums = nums.toMutableList()
+    sortedNums.sort()
+    sortedNums = sortedNums.subList(0, 5)
+    if (sortedNums != extracted) throw IllegalStateException("Heap is returning the wrong items")
+    else {
+        println(nums)
+        println(extracted)
+    }
+
+    //    h.insert(5)
+    //    h.insert(3)
+    //    h.insert(10)
+    //    h.insert(8)
+    //    h.insert(9)
+    //    h.insert(4)
+    //    h.insert(1)
+    //    h.insert(2)
+    //    h.insert(6)
+    //    h.insert(7)
     //    h.decreaseKey(1, 0)
 }

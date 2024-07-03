@@ -20,7 +20,7 @@ fun <T : Comparable<T>> oneNodeLossReduction(x: NodeRecord<T>, heapRecord: HeapR
     x.setLoss(0u, heapRecord)
 
     // decrease y's rank by one
-    y.decreaseRank()
+    y.decreaseRank(heapRecord)
 
     // if y is not an active root, increase its loss by one
     if (!y.isActiveRoot()) y.setLoss(y.loss!! + 1u, heapRecord)
@@ -30,4 +30,15 @@ fun <T : Comparable<T>> oneNodeLossReduction(x: NodeRecord<T>, heapRecord: HeapR
 
     // adjust fix-list for y
     moveToPositiveLoss(y, heapRecord)
+}
+
+fun <T : Comparable<T>> canPerformOneNodeLossReduction(heapRecord: HeapRecord<T>): Boolean {
+    heapRecord.fixList?.let { lastInFix ->
+        return lastInFix.node.loss!! >= 2u
+    }
+    return false
+}
+
+fun <T : Comparable<T>> performOneNodeLossReduction(heapRecord: HeapRecord<T>) {
+    oneNodeLossReduction(heapRecord.fixList!!.node, heapRecord)
 }

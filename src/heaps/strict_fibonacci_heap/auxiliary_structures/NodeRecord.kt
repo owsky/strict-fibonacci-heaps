@@ -5,6 +5,7 @@ package heaps.strict_fibonacci_heap.auxiliary_structures
 import heaps.strict_fibonacci_heap.utils.fixListRemove
 import heaps.strict_fibonacci_heap.utils.moveToActiveRoots
 import heaps.strict_fibonacci_heap.utils.moveToPositiveLoss
+import heaps.strict_fibonacci_heap.utils.updateRankPointersBeforeRemove
 
 class NodeRecord<T : Comparable<T>>(var item: T) {
     var left: NodeRecord<T>? = null
@@ -59,7 +60,7 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         return isActiveRoot() || (isActive() && loss != null && loss!! > 0u)
     }
 
-    fun increaseRank() {
+    fun increaseRank(heapRecord: HeapRecord<T>) {
         val nextRank: RankListRecord<T>
         when (rank) {
             is RankListRecord<*> -> {
@@ -89,10 +90,10 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
                 throw IllegalArgumentException("Unknown record type")
             }
         }
-        setRank(nextRank)
+        setRank(nextRank, heapRecord)
     }
 
-    fun decreaseRank() {
+    fun decreaseRank(heapRecord: HeapRecord<T>) {
         val prevRank: RankListRecord<T>
         when (rank) {
             is RankListRecord<*> -> {
@@ -108,7 +109,7 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
                 throw IllegalArgumentException("Unknown record type")
             }
         }
-        setRank(prevRank)
+        setRank(prevRank, heapRecord)
     }
 
     fun getRank(): RankListRecord<T> {
@@ -125,7 +126,7 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         }
     }
 
-    fun setRank(newRank: RankListRecord<T>?) {
+    fun setRank(newRank: RankListRecord<T>?, heapRecord: HeapRecord<T>) {
         val currRank = getRank()
         --currRank.refCount
 
@@ -142,27 +143,7 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
             }
             is FixListRecord<*> -> {
                 val rankFix = rank as FixListRecord<T>
-                val nextInFix = rankFix.right!!
-
-                if (isActiveRoot()) {
-                    currRank.activeRoots?.let {
-                        if (it === rankFix) {
-                            currRank.activeRoots =
-                                if (nextInFix.rank === currRank && nextInFix.node.isActiveRoot())
-                                    nextInFix
-                                else null
-                        }
-                    }
-                } else {
-                    currRank.loss?.let {
-                        if (it === rankFix) {
-                            currRank.loss =
-                                if (nextInFix.rank === currRank && nextInFix.node.isPassive())
-                                    nextInFix
-                                else null
-                        }
-                    }
-                }
+                updateRankPointersBeforeRemove(rankFix, heapRecord)
                 rankFix.rank = newRank
             }
             else -> {
@@ -198,7 +179,7 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         loss = 0u
     }
 
-    fun setPassive() {
+    fun setPassive(heapRecord: HeapRecord<T>) {
         --active!!.refCount
         active = null
 
@@ -210,9 +191,11 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
             is FixListRecord<*> -> {
                 val fixRecord = rank as FixListRecord<T>
                 --fixRecord.rank.refCount
+                fixListRemove(fixRecord, heapRecord)
             }
         }
         rank = null
+        loss = null
     }
 
     fun setLoss(newLoss: UInt, heapRecord: HeapRecord<T>) {

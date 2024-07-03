@@ -40,14 +40,14 @@ fun <T : Comparable<T>> twoNodesLossReduction(
     link(y, x, heapRecord)
 
     // increase the rank of x
-    x.increaseRank()
+    x.increaseRank(heapRecord)
 
     // set loss of x and y to zero
     x.setLoss(0u, heapRecord)
     y.setLoss(0u, heapRecord)
 
     // decrease the rank of z
-    z.decreaseRank()
+    z.decreaseRank(heapRecord)
 
     // if z is not an active root, the loss is increased by one
     if (!z.isActiveRoot()) z.setLoss(z.loss!! + 1u, heapRecord)
@@ -58,4 +58,21 @@ fun <T : Comparable<T>> twoNodesLossReduction(
 
     // adjust fix-list for z (decreased rank, increased loss)
     if (z.isActiveRoot()) moveToActiveRoots(z, heapRecord) else moveToPositiveLoss(z, heapRecord)
+}
+
+fun <T : Comparable<T>> canPerformTwoNodesLossReduction(heapRecord: HeapRecord<T>): Boolean {
+    heapRecord.fixList?.let { fstLastInFix ->
+        val sndLastInFix = fstLastInFix.left!!
+        return fstLastInFix !== sndLastInFix &&
+            fstLastInFix.rank === sndLastInFix.rank &&
+            fstLastInFix.node.loss == 1u &&
+            sndLastInFix.node.loss == 1u
+    }
+    return false
+}
+
+fun <T : Comparable<T>> performTwoNodesLossReduction(heapRecord: HeapRecord<T>) {
+    val fstLastInFix = heapRecord.fixList!!
+    val sndLastInFix = fstLastInFix.left!!
+    twoNodesLossReduction(fstLastInFix.node, sndLastInFix.node, heapRecord)
 }

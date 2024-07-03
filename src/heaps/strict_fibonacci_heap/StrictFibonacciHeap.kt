@@ -4,8 +4,7 @@ import heaps.MinHeap
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import heaps.strict_fibonacci_heap.transformations.*
-import heaps.strict_fibonacci_heap.utils.mergeQueues
-import heaps.strict_fibonacci_heap.utils.moveToActiveRoots
+import heaps.strict_fibonacci_heap.utils.*
 
 class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) :
     MinHeap<T>(items) {
@@ -90,7 +89,47 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         }
     }
 
-    private fun deleteMin() {}
+    private fun deleteMin() {
+        if (heapRecord.root!!.leftChild == null) {
+            // if the root is the only element
+            heapRecord.root = null
+            --heapRecord.size
+            return
+        }
+
+        // find the minimum child x of the root
+        val x = findMinimumRootChild(heapRecord)
+
+        // set x as the new root
+        setNewRoot(x, heapRecord)
+
+        // repeat twice: move the front node y on Q to the back and link the two rightmost children
+        // of y to x, if they are passive
+        repeat(2) {
+            heapRecord.qHead?.let { y ->
+                moveToBackOfQueue(y, heapRecord)
+                y.leftChild?.let {
+                    val fstLastChild = it.left!!
+                    val sndLastChild = fstLastChild.left!!
+                    if (fstLastChild.isPassive()) link(fstLastChild, x, heapRecord)
+                    if (sndLastChild !== fstLastChild && sndLastChild.isPassive())
+                        link(sndLastChild, x, heapRecord)
+                }
+            }
+        }
+
+        // do a loss reduction if possible
+        if (canPerformTwoNodesLossReduction(heapRecord)) performTwoNodesLossReduction(heapRecord)
+        else if (canPerformOneNodeLossReduction(heapRecord)) performOneNodeLossReduction(heapRecord)
+
+        // do active root reductions and root degree reductions in any order until none of either is
+        // possible
+        while (canPerformActiveRootReduction(heapRecord) ||
+            canPerformRootDegreeReduction(heapRecord)) {
+            if (canPerformActiveRootReduction(heapRecord)) performActiveRootReduction(heapRecord)
+            if (canPerformRootDegreeReduction(heapRecord)) performRootDegreeReduction(heapRecord)
+        }
+    }
 
     override fun extractMin(): T {
         val min = heapRecord.root?.item ?: throw NoSuchElementException("The heap is empty")
@@ -121,7 +160,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
                 x.setLoss(0u, heapRecord)
                 moveToActiveRoots(x, heapRecord)
                 // decrease rank of y by one
-                y.decreaseRank()
+                y.decreaseRank(heapRecord)
             }
 
             // do a loss reduction if possible

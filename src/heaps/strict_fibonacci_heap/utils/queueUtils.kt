@@ -3,6 +3,8 @@ package heaps.strict_fibonacci_heap.utils
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 
+// merge the queues from h1 and h2, with v in-between them
+// return the pointer to the head of h1's queue as the new queue
 fun <T : Comparable<T>> mergeQueues(
     h1: HeapRecord<T>,
     v: NodeRecord<T>,
@@ -43,4 +45,32 @@ fun <T : Comparable<T>> mergeQueues(
         h2QueueTail.qNext = h1QueueHead
     }
     return h1.qHead!!
+}
+
+// remove x from the queue
+fun <T : Comparable<T>> removeFromQueue(x: NodeRecord<T>, heapRecord: HeapRecord<T>) {
+    val next = x.qNext!!
+    val prev = x.qPrev!!
+
+    if (x === next && x === prev) {
+        // x is the only item in the queue
+        heapRecord.qHead = null
+    } else if (next === prev) {
+        // there are exactly two items in the queue
+        if (heapRecord.qHead === x) heapRecord.qHead = x.qNext
+        next.qNext = next
+        next.qPrev = next
+    } else {
+        // there are more than two items in the queue
+        if (heapRecord.qHead === x) heapRecord.qHead = x.qNext
+        next.qPrev = prev
+        prev.qNext = next
+    }
+
+    x.qNext = null
+    x.qPrev = null
+}
+
+fun <T : Comparable<T>> moveToBackOfQueue(x: NodeRecord<T>, heapRecord: HeapRecord<T>) {
+    heapRecord.qHead = x.qNext
 }

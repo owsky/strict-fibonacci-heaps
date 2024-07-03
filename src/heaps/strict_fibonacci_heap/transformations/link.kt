@@ -33,7 +33,7 @@ fun <T : Comparable<T>> link(x: NodeRecord<T>, y: NodeRecord<T>, heapRecord: Hea
 
     previousParent?.let {
         // if both x and its previous parent are active, decrease the parent rank
-        if (x.isActive() && it.isActive()) it.decreaseRank()
+        if (x.isActive() && it.isActive()) it.decreaseRank(heapRecord)
         // if the previous parent is active but not an active root, increase its loss
         if (it.isActive() && !it.isActiveRoot()) it.setLoss(it.loss!! + 1u, heapRecord)
         // if previousParent is the non-linkable child, check if it still is
@@ -46,7 +46,7 @@ fun <T : Comparable<T>> link(x: NodeRecord<T>, y: NodeRecord<T>, heapRecord: Hea
     }
 
     // if both x and y are active, increase the rank of y
-    if (x.isActive() && y.isActive()) y.increaseRank()
+    if (x.isActive() && y.isActive()) y.increaseRank(heapRecord)
 
     // if x is an active root and y is active, x ceases to be an active root
     if (xIsActiveRoot && y.isActive()) x.demoteActiveRoot(heapRecord)
