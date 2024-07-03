@@ -3,6 +3,7 @@ package visualization
 import heaps.strict_fibonacci_heap.StrictFibonacciHeap
 import java.awt.Dimension
 import javax.swing.JFrame
+import kotlin.math.pow
 import org.graphstream.graph.implementations.SingleGraph
 import org.graphstream.ui.swing_viewer.SwingViewer
 import org.graphstream.ui.swing_viewer.ViewPanel
@@ -19,13 +20,13 @@ fun <T : Comparable<T>> visualizeTree(heap: StrictFibonacciHeap<T>) {
     viewer.disableAutoLayout()
 
     val viewPanel = viewer.addDefaultView(false) as ViewPanel
-    viewPanel.enableMouseOptions()
 
     val alreadyAddedNodes = mutableSetOf<String>()
     val alreadyAddedEdges = mutableSetOf<Pair<String, String>>()
     addNode(heap.heapRecord.root, graph, alreadyAddedNodes, alreadyAddedEdges)
 
-    val t = TreeLayout(heap.heapRecord.root!!.item.toString())
+    val heapSize = heap.getSize().toDouble()
+    val t = TreeLayout(heap.heapRecord.root!!.item.toString(), heapSize * 3, heapSize.pow(1.5))
     t.init(graph)
     t.compute()
 

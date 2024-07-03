@@ -5,10 +5,12 @@ import org.graphstream.algorithm.Algorithm
 import org.graphstream.graph.Graph
 import org.graphstream.graph.Node
 
-class TreeLayout(private val rootId: String) : Algorithm {
+class TreeLayout(
+    private val rootId: String,
+    private val xOffset: Double,
+    private val yOffset: Double
+) : Algorithm {
     private var graph: Graph? = null
-    private val xOffset = 100.0
-    private val yOffset = 50.0
 
     override fun init(graph: Graph?) {
         this.graph = graph

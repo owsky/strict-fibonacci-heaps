@@ -7,7 +7,7 @@ fun main() {
     //    runDijkstra(HeapKind.FIBONACCI_HEAP)
     //    runPrim(HeapKind.FIBONACCI_HEAP)
 
-    var nums = generateIntegers(1234L, 20, 0..100)
+    var nums = generateIntegers(1234L, 15, 0..100)
     nums =
         intArrayOf(17, 27, 28, 11, 10, 2, 30, 26, 1, 22, 23, 7, 13, 24, 3, 12, 25, 6, 29, 21)
             .toList()
