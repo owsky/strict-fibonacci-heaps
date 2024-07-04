@@ -21,16 +21,17 @@ fun addNode(
     graphNode.setAttribute("ui.style", "text-size: 30; text-color: black;")
 
     val textOffset = if (node.item in 10..99) "text-offset: 0, -8;" else "text-offset: -1, -6;"
-
-    if (node.isPassive()) {
-        graphNode.setAttribute(
-            "ui.style",
-            "fill-color: red; stroke-mode: plain; stroke-color: black; stroke-width: 1px; $textOffset")
+    val fillColor: String
+    if (node.isActiveRoot()) graphNode.setAttribute("ui.activeRoot")
+    if (node.isActive()) {
+        graphNode.setAttribute("ui.rank", node.getRank().rankNumber)
+        fillColor = "white"
     } else {
-        graphNode.setAttribute(
-            "ui.style",
-            "fill-color: white; stroke-mode: plain; stroke-color: black; stroke-width: 1px; $textOffset")
+        fillColor = "red"
     }
+    graphNode.setAttribute(
+        "ui.style",
+        "fill-color: $fillColor; stroke-mode: plain; stroke-color: black; stroke-width: 1px; $textOffset")
 
     node.left?.let { left ->
         addNode(left, graph, alreadyAddedNodes, alreadyAddedEdges)

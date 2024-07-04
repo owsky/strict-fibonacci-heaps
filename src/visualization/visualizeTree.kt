@@ -20,6 +20,8 @@ fun visualizeTree(heap: StrictFibonacciHeap<Int>) {
     viewer.disableAutoLayout()
 
     val viewPanel = viewer.addDefaultView(false) as ViewPanel
+    viewPanel.setMouseManager(CustomMouseManager())
+    //    (viewPanel as View).enableMouseOptions()
 
     val alreadyAddedNodes = mutableSetOf<String>()
     val alreadyAddedEdges = mutableSetOf<Pair<String, String>>()
