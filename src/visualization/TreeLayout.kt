@@ -73,9 +73,10 @@ class TreeLayout(
         }
 
         // Set position of the current node in the middle of its children
-        val nodeX =
-            if (node === graph!!.getNode(rootId)) 660.0
-            else (childPositions.first() + childPositions.last()) / 2.0
+        //        val nodeX =
+        //            if (node === graph!!.getNode(rootId)) 660.0
+        //            else (childPositions.first() + childPositions.last()) / 2.0
+        val nodeX = (childPositions.first() + childPositions.last()) / 2.0
         node.setAttribute("xy", doubleArrayOf(nodeX, -depth * yOffset))
 
         // Recursively layout children

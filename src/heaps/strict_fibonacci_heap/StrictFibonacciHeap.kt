@@ -12,10 +12,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
     private val lookup: MutableMap<T, NodeRecord<T>> = mutableMapOf()
 
     init {
-        items.forEach { item ->
-            //
-            insert(item)
-        }
+        items.forEach { item -> insert(item) }
     }
 
     override fun insert(item: T) {
