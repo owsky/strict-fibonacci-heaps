@@ -56,16 +56,19 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
 
         fun updateLayout() {
             graph.clear()
-            addNode(heap.heapRecord.root, graph)
-
             val heapSize = heap.getSize().toDouble()
-            val t =
-                TreeLayout(heap.heapRecord.root!!.item.toString(), heapSize * 3, heapSize.pow(1.5))
-            t.init(graph)
-            t.compute()
+            if (heapSize > 0.0) {
+                addNode(heap.heapRecord.root, graph)
 
-            // Reapply styles after updating the graph
-            applyStyles()
+                val t =
+                    TreeLayout(
+                        heap.heapRecord.root!!.item.toString(), heapSize * 3, heapSize.pow(1.5))
+                t.init(graph)
+                t.compute()
+
+                // Reapply styles after updating the graph
+                applyStyles()
+            }
         }
 
         if (heap.getSize() > 0) updateLayout()
