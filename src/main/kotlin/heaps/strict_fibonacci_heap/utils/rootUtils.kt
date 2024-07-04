@@ -81,23 +81,93 @@ fun <T : Comparable<T>> setNewRoot(x: NodeRecord<T>, heapRecord: HeapRecord<T>) 
 
     // make all the other children of the root children of x
     linkAllToRoot(previousRoot.leftChild, heapRecord)
+    checkFixList(heapRecord)
 }
 
 fun <T : Comparable<T>> rearrangeRootChildren(heapRecord: HeapRecord<T>) {
     val root = heapRecord.root!!
-    val children: MutableList<NodeRecord<T>> = mutableListOf()
-    root.leftChild?.let { firstChild ->
-        children.add(firstChild)
-        var currentChild = firstChild.right!!
-        while (currentChild !== firstChild) {
-            children.add(currentChild)
-            currentChild = currentChild.right!!
+    val activeChildren: MutableList<NodeRecord<T>> = mutableListOf()
+    val passiveChildren: MutableList<NodeRecord<T>> = mutableListOf()
+    val passiveLinkableChildren: MutableList<NodeRecord<T>> = mutableListOf()
+
+    root.leftChild?.forEach { child ->
+        child.left = null
+        child.right = null
+        if (child.isActive()) activeChildren.add(child)
+        else if (child.isPassiveLinkable()) passiveLinkableChildren.add(child)
+        else passiveChildren.add(child)
+    }
+
+    root.leftChild = null
+    activeChildren.forEach { currentChild ->
+        if (root.leftChild == null) {
+            root.leftChild = currentChild
+            currentChild.left = currentChild
+            currentChild.right = currentChild
+        } else {
+            val firstChild = root.leftChild!!
+            val lastChild = firstChild.left!!
+
+            if (firstChild === lastChild) {
+                // I've only inserted one child yet
+                firstChild.right = currentChild
+                firstChild.left = currentChild
+                currentChild.right = firstChild
+                currentChild.left = firstChild
+            } else {
+                lastChild.right = currentChild
+                firstChild.left = currentChild
+                currentChild.left = lastChild
+                currentChild.right = firstChild
+            }
         }
     }
-    children.forEach { child ->
-        removeFromCircularList(child)
-        child.parent = null
+
+    passiveChildren.forEach { currentChild ->
+        if (root.leftChild == null) {
+            root.leftChild = currentChild
+            currentChild.left = currentChild
+            currentChild.right = currentChild
+        } else {
+            val firstChild = root.leftChild!!
+            val lastChild = firstChild.left!!
+
+            if (firstChild === lastChild) {
+                // I've only inserted one child yet
+                firstChild.right = currentChild
+                firstChild.left = currentChild
+                currentChild.right = firstChild
+                currentChild.left = firstChild
+            } else {
+                lastChild.right = currentChild
+                firstChild.left = currentChild
+                currentChild.left = lastChild
+                currentChild.right = firstChild
+            }
+        }
     }
-    root.leftChild = null
-    children.forEach { child -> link(child, root, heapRecord) }
+
+    passiveLinkableChildren.forEach { currentChild ->
+        if (root.leftChild == null) {
+            root.leftChild = currentChild
+            currentChild.left = currentChild
+            currentChild.right = currentChild
+        } else {
+            val firstChild = root.leftChild!!
+            val lastChild = firstChild.left!!
+
+            if (firstChild === lastChild) {
+                // I've only inserted one child yet
+                firstChild.right = currentChild
+                firstChild.left = currentChild
+                currentChild.right = firstChild
+                currentChild.left = firstChild
+            } else {
+                lastChild.right = currentChild
+                firstChild.left = currentChild
+                currentChild.left = lastChild
+                currentChild.right = firstChild
+            }
+        }
+    }
 }

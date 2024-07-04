@@ -172,9 +172,27 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
     }
 
     fun setActiveRootFromActive(heapRecord: HeapRecord<T>) {
-        val currRank = getRank()
-        val xFix = FixListRecord(this, currRank)
-        rank = xFix
+        val xFix: FixListRecord<T>
+        val currRank: RankListRecord<T>
+        if (loss!! > 0u) {
+            // check if this is in fix-list as an active node
+            xFix = rank as FixListRecord<T>
+            currRank = xFix.rank
+            if (heapRecord.singles === xFix) {
+                val nextInFix = xFix.right!!
+
+                if (nextInFix == xFix || nextInFix.node.isActiveRoot()) heapRecord.singles = null
+                else if (!nextInFix.rank.isLossTransformable()) heapRecord.singles = nextInFix
+            }
+        } else {
+            if (rank is FixListRecord<*>)
+                throw IllegalArgumentException(
+                    "Trying to set an active root to active root. Node key: $item")
+            currRank = getRank()
+            xFix = FixListRecord(this, currRank)
+            rank = xFix
+        }
+
         loss = 0u
         moveToActiveRoots(this, heapRecord)
         currRank.activeRoots?.let { currRank.activeRoots = xFix }
@@ -199,15 +217,8 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         loss = null
 
         // all active children become active roots
-        leftChild?.let { firstChild ->
-            if (firstChild.isActive() && !firstChild.isActiveRoot())
-                firstChild.setActiveRootFromActive(heapRecord)
-            var currentChild = firstChild.right!!
-            while (currentChild !== firstChild) {
-                if (currentChild.isActive() && !currentChild.isActiveRoot())
-                    currentChild.setActiveRootFromActive(heapRecord)
-                currentChild = currentChild.right!!
-            }
+        leftChild?.forEach { currentChild ->
+            if (currentChild.isActive()) currentChild.setActiveRootFromActive(heapRecord)
         }
     }
 
@@ -237,5 +248,17 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
             else xFix.rank.activeRoots = null
         }
         fixListRemove(xFix, heapRecord)
+    }
+
+    fun forEach(action: (NodeRecord<T>) -> Unit) {
+        val visited = mutableSetOf<NodeRecord<T>>()
+        var current: NodeRecord<T>? = this
+
+        while (current !in visited) {
+            val next = current!!.right!!
+            visited.add(current)
+            action(current)
+            current = next
+        }
     }
 }

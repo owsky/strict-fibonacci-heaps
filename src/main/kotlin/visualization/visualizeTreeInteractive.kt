@@ -113,7 +113,7 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
         buttonPanel.add(closeButton)
         dialog.add(buttonPanel, BorderLayout.SOUTH)
 
-        dialog.size = Dimension(1920, 1080)
+        dialog.size = Dimension(1280, 720)
         dialog.setLocationRelativeTo(null) // Center on screen
         dialog.isModal = true
 

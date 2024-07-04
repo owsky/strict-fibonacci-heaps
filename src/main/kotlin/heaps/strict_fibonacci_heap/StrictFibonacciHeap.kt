@@ -19,6 +19,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
     }
 
     override fun insert(item: T) {
+        logger.debug { "Inserting $item" }
         if (heapRecord.root == null) {
             heapRecord.root = NodeRecord(item)
             heapRecord.size = 1
@@ -26,6 +27,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         } else {
             val newHeap = HeapRecord(item)
             meld(newHeap)
+            checkFixList(heapRecord) // DEBUG
         }
     }
 
@@ -109,13 +111,17 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
                 y.leftChild?.let {
                     val fstLastChild = it.left!!
                     val sndLastChild = fstLastChild.left!!
-                    if (fstLastChild.isPassive()) link(fstLastChild, x, heapRecord)
-                    if (sndLastChild !== fstLastChild && sndLastChild.isPassive())
+                    if (fstLastChild.isPassive()) {
+                        link(fstLastChild, x, heapRecord)
+                        checkFixList(heapRecord) // DEBUG
+                    }
+                    if (sndLastChild !== fstLastChild && sndLastChild.isPassive()) {
                         link(sndLastChild, x, heapRecord)
+                        checkFixList(heapRecord) // DEBUG
+                    }
                 }
             }
         }
-        checkFixList(heapRecord) // DEBUG
 
         // do a loss reduction if possible
         if (canPerformTwoNodesLossReduction(heapRecord)) {

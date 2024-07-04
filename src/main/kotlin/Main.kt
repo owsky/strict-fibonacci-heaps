@@ -5,7 +5,7 @@ import visualization.visualizeTreeInteractive
 fun main() {
     val randomGeneration = false
     var visualize = true
-    if (isDebuggerAttached()) visualize = false
+    if (isDebuggerAttached()) visualize = true
     val interactive = true
     var nums =
         if (randomGeneration) generateIntegers(1234L, 30, 0..100)
