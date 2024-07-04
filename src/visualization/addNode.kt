@@ -3,8 +3,8 @@ package visualization
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import org.graphstream.graph.Graph
 
-fun <T : Comparable<T>> addNode(
-    node: NodeRecord<T>?,
+fun addNode(
+    node: NodeRecord<Int>?,
     graph: Graph,
     alreadyAddedNodes: MutableSet<String>,
     alreadyAddedEdges: MutableSet<Pair<String, String>>
@@ -20,14 +20,16 @@ fun <T : Comparable<T>> addNode(
     graphNode.setAttribute("ui.label", node.item.toString())
     graphNode.setAttribute("ui.style", "text-size: 30; text-color: black;")
 
+    val textOffset = if (node.item in 10..99) "text-offset: 0, -8;" else "text-offset: -1, -6;"
+
     if (node.isPassive()) {
         graphNode.setAttribute(
             "ui.style",
-            "fill-color: red; stroke-mode: plain; stroke-color: black; stroke-width: 1px;")
+            "fill-color: red; stroke-mode: plain; stroke-color: black; stroke-width: 1px; $textOffset")
     } else {
         graphNode.setAttribute(
             "ui.style",
-            "fill-color: white; stroke-mode: plain; stroke-color: black; stroke-width: 1px;")
+            "fill-color: white; stroke-mode: plain; stroke-color: black; stroke-width: 1px; $textOffset")
     }
 
     node.left?.let { left ->

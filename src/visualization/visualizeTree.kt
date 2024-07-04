@@ -9,7 +9,7 @@ import org.graphstream.ui.swing_viewer.SwingViewer
 import org.graphstream.ui.swing_viewer.ViewPanel
 import org.graphstream.ui.view.Viewer
 
-fun <T : Comparable<T>> visualizeTree(heap: StrictFibonacciHeap<T>) {
+fun visualizeTree(heap: StrictFibonacciHeap<Int>) {
     System.setProperty("org.graphstream.ui", "swing")
     val graph = SingleGraph("MyGraph")
     graph.setAttribute("ui.antialias")
