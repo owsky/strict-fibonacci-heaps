@@ -4,7 +4,7 @@ import visualization.visualizeTreeInteractive
 
 fun main() {
     val randomGeneration = false
-    var visualize = false
+    var visualize = true
     if (isDebuggerAttached()) visualize = false
     val interactive = true
     var nums =
@@ -55,16 +55,16 @@ fun main() {
         h = StrictFibonacciHeap(nums)
     }
 
-    val extracted = ArrayList<Int>()
-    for (i in nums.indices) extracted.add(h.extractMin())
-
-    val sortedNums = nums.toMutableList()
-    sortedNums.sort()
-    if (sortedNums != extracted)
-        throw IllegalStateException("The heap is returning the wrong items")
-    else {
-        println(nums)
-        println(extracted)
-    }
-    visualizeTree(h)
+    //    val extracted = ArrayList<Int>()
+    //    for (i in nums.indices) extracted.add(h.extractMin())
+    //
+    //    val sortedNums = nums.toMutableList()
+    //    sortedNums.sort()
+    //    if (sortedNums != extracted)
+    //        throw IllegalStateException("The heap is returning the wrong items")
+    //    else {
+    //        println(nums)
+    //        println(extracted)
+    //    }
+    //    visualizeTree(h)
 }

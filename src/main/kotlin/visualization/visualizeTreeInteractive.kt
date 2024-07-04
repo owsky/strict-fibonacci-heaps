@@ -54,7 +54,7 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
         val viewPanel = viewer.addDefaultView(false) as ViewPanel
         viewPanel.setMouseManager(CustomMouseManager())
 
-        fun updateVisualization() {
+        fun updateLayout() {
             graph.clear()
             addNode(heap.heapRecord.root, graph)
 
@@ -68,7 +68,7 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
             applyStyles()
         }
 
-        if (heap.getSize() > 0) updateVisualization()
+        if (heap.getSize() > 0) updateLayout()
 
         val dialog = JDialog()
         dialog.title = "Interactive Tree Visualization"
@@ -77,17 +77,25 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
 
         val buttonPanel = JPanel()
         val addNodeButton = JButton("Add Node")
+        val deleteMinButton = JButton("Delete Min")
         val closeButton = JButton("Close")
 
         addNodeButton.addActionListener {
             if (currentIndex < nums.size) {
                 heap.insert(nums[currentIndex])
                 currentIndex++
-                updateVisualization()
+                updateLayout()
                 addNodeButton.text =
                     if (currentIndex < nums.size) "Add Node (${nums[currentIndex]})"
                     else "No More Nodes"
                 addNodeButton.isEnabled = currentIndex < nums.size
+            }
+        }
+
+        deleteMinButton.addActionListener {
+            if (heap.getSize() > 0) {
+                heap.extractMin()
+                updateLayout()
             }
         }
 
@@ -98,6 +106,7 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
         }
 
         buttonPanel.add(addNodeButton)
+        buttonPanel.add(deleteMinButton)
         buttonPanel.add(closeButton)
         dialog.add(buttonPanel, BorderLayout.SOUTH)
 
