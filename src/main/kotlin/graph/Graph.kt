@@ -3,7 +3,7 @@ package graph
 import java.util.AbstractMap.SimpleEntry
 
 class Graph(private var directed: Boolean) {
-    var data: MutableMap<Node, MutableSet<Map.Entry<Node, Double>>> = HashMap()
+    private var data: MutableMap<Node, MutableSet<Map.Entry<Node, Double>>> = HashMap()
 
     fun addEdge(u: Node, v: Node, weight: Double) {
         data.computeIfAbsent(u) { HashSet() }.add(SimpleEntry(v, weight))

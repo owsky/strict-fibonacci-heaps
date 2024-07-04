@@ -40,11 +40,12 @@ fun <T : Comparable<T>> updateNonLinkableChild(heapRecord: HeapRecord<T>) {
 fun <T : Comparable<T>> linkAllToRoot(firstChild: NodeRecord<T>?, heapRecord: HeapRecord<T>) {
     val root = heapRecord.root!!
     firstChild?.let {
-        link(it, root, heapRecord)
         var currentChild = it.right!!
+        link(it, root, heapRecord)
         while (currentChild !== it) {
+            val nextChild = currentChild.right!!
             link(currentChild, root, heapRecord)
-            currentChild = currentChild.right!!
+            currentChild = nextChild
         }
     }
 }
@@ -52,7 +53,7 @@ fun <T : Comparable<T>> linkAllToRoot(firstChild: NodeRecord<T>?, heapRecord: He
 fun <T : Comparable<T>> setNewRoot(x: NodeRecord<T>, heapRecord: HeapRecord<T>) {
     val previousRoot = heapRecord.root!!
 
-    // if x is active, set it to passive
+    // if x is active, set it to passive and all active children become active roots
     if (x.isActive()) x.setPassive(heapRecord)
 
     // remove x from the queue

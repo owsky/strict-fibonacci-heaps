@@ -171,12 +171,13 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         ++zeroRank.refCount
     }
 
-    fun setActiveRootFromActive() {
+    fun setActiveRootFromActive(heapRecord: HeapRecord<T>) {
         val currRank = getRank()
         val xFix = FixListRecord(this, currRank)
         rank = xFix
-        currRank.activeRoots?.let { currRank.activeRoots = xFix }
         loss = 0u
+        moveToActiveRoots(this, heapRecord)
+        currRank.activeRoots?.let { currRank.activeRoots = xFix }
     }
 
     fun setPassive(heapRecord: HeapRecord<T>) {
@@ -196,12 +197,25 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         }
         rank = null
         loss = null
+
+        // all active children become active roots
+        leftChild?.let { firstChild ->
+            if (firstChild.isActive() && !firstChild.isActiveRoot())
+                firstChild.setActiveRootFromActive(heapRecord)
+            var currentChild = firstChild.right!!
+            while (currentChild !== firstChild) {
+                if (currentChild.isActive() && !currentChild.isActiveRoot())
+                    currentChild.setActiveRootFromActive(heapRecord)
+                currentChild = currentChild.right!!
+            }
+        }
     }
 
     fun setLoss(newLoss: UInt, heapRecord: HeapRecord<T>) {
         if (isPassive()) throw IllegalStateException("Only active nodes can have loss")
         if (isActiveRoot() && newLoss != 0u)
             throw IllegalStateException("Active roots are not allowed loss greater than 0")
+        loss = newLoss
         if (newLoss == 0u && !isActiveRoot()) {
             // if not active root, remove from fix-list if present
             if (rank is FixListRecord<*>) fixListRemove(rank as FixListRecord<T>, heapRecord)
@@ -211,7 +225,6 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
             moveToPositiveLoss(this, heapRecord)
             xFix.rank.loss?.let { xFix.rank.loss = xFix }
         }
-        loss = newLoss
     }
 
     // demote an active root to being just active

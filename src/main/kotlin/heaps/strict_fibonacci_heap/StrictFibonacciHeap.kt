@@ -5,6 +5,9 @@ import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import heaps.strict_fibonacci_heap.transformations.*
 import heaps.strict_fibonacci_heap.utils.*
+import io.github.oshai.kotlinlogging.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) :
     MinHeap<T>(items) {
@@ -71,10 +74,12 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
             (activeRootReductionCounter < 1 && canPerformActiveRootReduction(heapRecord))) {
             if (rootDegreeReductionCounter < 1 && canPerformRootDegreeReduction(heapRecord)) {
                 performRootDegreeReduction(heapRecord)
+                checkFixList(heapRecord) // DEBUG
                 ++rootDegreeReductionCounter
             }
             if (activeRootReductionCounter < 1 && canPerformActiveRootReduction(heapRecord)) {
                 performActiveRootReduction(heapRecord)
+                checkFixList(heapRecord) // DEBUG
                 ++activeRootReductionCounter
             }
         }
@@ -94,6 +99,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
 
         // set x as the new root
         setNewRoot(x, heapRecord)
+        checkFixList(heapRecord) // DEBUG
 
         // repeat twice: move the front node y on Q to the back and link the two rightmost children
         // of y to x, if they are passive
@@ -109,17 +115,29 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
                 }
             }
         }
+        checkFixList(heapRecord) // DEBUG
 
         // do a loss reduction if possible
-        if (canPerformTwoNodesLossReduction(heapRecord)) performTwoNodesLossReduction(heapRecord)
-        else if (canPerformOneNodeLossReduction(heapRecord)) performOneNodeLossReduction(heapRecord)
+        if (canPerformTwoNodesLossReduction(heapRecord)) {
+            performTwoNodesLossReduction(heapRecord)
+            checkFixList(heapRecord) // DEBUG
+        } else if (canPerformOneNodeLossReduction(heapRecord)) {
+            performOneNodeLossReduction(heapRecord)
+            checkFixList(heapRecord) // DEBUG
+        }
 
         // do active root reductions and root degree reductions in any order until none of either is
         // possible
         while (canPerformActiveRootReduction(heapRecord) ||
             canPerformRootDegreeReduction(heapRecord)) {
-            if (canPerformActiveRootReduction(heapRecord)) performActiveRootReduction(heapRecord)
-            if (canPerformRootDegreeReduction(heapRecord)) performRootDegreeReduction(heapRecord)
+            if (canPerformActiveRootReduction(heapRecord)) {
+                performActiveRootReduction(heapRecord)
+                checkFixList(heapRecord) // DEBUG
+            }
+            if (canPerformRootDegreeReduction(heapRecord)) {
+                performRootDegreeReduction(heapRecord)
+                checkFixList(heapRecord) // DEBUG
+            }
         }
     }
 
@@ -128,6 +146,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         val min =
             heapRecord.root?.item
                 ?: throw IllegalStateException("The heap is not empty but the root is null")
+        logger.debug { "Deleting $min" }
         deleteMin()
         return min
     }

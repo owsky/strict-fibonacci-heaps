@@ -1,8 +1,11 @@
 import algorithms.prim
 import heaps.HeapKind
+import io.github.oshai.kotlinlogging.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 fun runPrim(kind: HeapKind) {
-    println("Running Prim's algorithm")
+    logger.info { "Running Prim's algorithm" }
 
     val (graph, root) = createGraph()
 

@@ -169,6 +169,9 @@ fun <T : Comparable<T>> moveToActiveRoots(x: NodeRecord<T>, heapRecord: HeapReco
 
 // x is an active node with positive loss or its loss has just increased
 fun <T : Comparable<T>> moveToPositiveLoss(x: NodeRecord<T>, heapRecord: HeapRecord<T>) {
+    if (x.isPassive()) throw IllegalArgumentException("Node is not active")
+    else if (x.loss == null || x.loss == 0u)
+        throw IllegalArgumentException("Node doesn't have positive loss")
     val xFix = x.rank as FixListRecord<T>
     val xRank = xFix.rank
     val rankLoss = xRank.loss

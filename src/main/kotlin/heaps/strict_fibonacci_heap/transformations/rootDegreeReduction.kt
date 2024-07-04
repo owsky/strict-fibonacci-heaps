@@ -4,6 +4,9 @@ import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import heaps.strict_fibonacci_heap.utils.insertIntoCircularList
 import heaps.strict_fibonacci_heap.utils.removeFromCircularList
+import io.github.oshai.kotlinlogging.KotlinLogging
+
+private val logger = KotlinLogging.logger {}
 
 fun <T : Comparable<T>> rootDegreeReduction(
     a: NodeRecord<T>,
@@ -20,7 +23,9 @@ fun <T : Comparable<T>> rootDegreeReduction(
         throw IllegalArgumentException(
             "Root degree reduction can only be performed on three passive and linkable children of the root")
 
-    println("Performing a root degree reduction with nodes ${a.item}, ${b.item} and ${c.item}")
+    logger.debug {
+        "Performing a root degree reduction with nodes ${a.item}, ${b.item} and ${c.item}"
+    }
 
     // sort by key
     val (x, y, z) =

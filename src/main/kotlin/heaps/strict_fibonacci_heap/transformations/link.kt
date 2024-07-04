@@ -51,6 +51,9 @@ fun <T : Comparable<T>> link(x: NodeRecord<T>, y: NodeRecord<T>, heapRecord: Hea
     // if x is an active root and y is active, x ceases to be an active root
     if (xIsActiveRoot && y.isActive()) x.demoteActiveRoot(heapRecord)
 
+    // if x is not an active root, but it is active and y is passive, then x becomes an active root
+    if (!xIsActiveRoot && x.isActive() && y.isPassive()) x.setActiveRootFromActive(heapRecord)
+
     // insert x into y's children
     if (y.leftChild == null) {
         // if y has no children
