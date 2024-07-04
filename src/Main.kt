@@ -11,16 +11,17 @@ fun main() {
         else
             intArrayOf(17, 27, 28, 11, 10, 2, 30, 26, 1, 22, 23, 7, 13, 24, 3, 12, 25, 6, 29, 21)
                 .toList()
+    val h: StrictFibonacciHeap<Int>
     if (visualize) {
         if (interactive) {
-            val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap()
+            h = StrictFibonacciHeap()
             visualizeTreeInteractive(h, nums)
         } else {
-            val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap(nums)
+            h = StrictFibonacciHeap(nums)
             visualizeTree(h)
         }
     } else {
-        val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap(nums)
+        h = StrictFibonacciHeap(nums)
     }
 
     //    val extracted = ArrayList<Int>()

@@ -54,14 +54,9 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
         val viewPanel = viewer.addDefaultView(false) as ViewPanel
         viewPanel.setMouseManager(CustomMouseManager())
 
-        val alreadyAddedNodes = mutableSetOf<String>()
-        val alreadyAddedEdges = mutableSetOf<Pair<String, String>>()
-
         fun updateVisualization() {
             graph.clear()
-            alreadyAddedNodes.clear()
-            alreadyAddedEdges.clear()
-            addNode(heap.heapRecord.root, graph, alreadyAddedNodes, alreadyAddedEdges)
+            addNode(heap.heapRecord.root, graph)
 
             val heapSize = heap.getSize().toDouble()
             val t =

@@ -3,19 +3,14 @@ package visualization
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import org.graphstream.graph.Graph
 
-fun addNode(
-    node: NodeRecord<Int>?,
-    graph: Graph,
-    alreadyAddedNodes: MutableSet<String>,
-    alreadyAddedEdges: MutableSet<Pair<String, String>>
-) {
+fun addNode(node: NodeRecord<Int>?, graph: Graph, childIndex: Int? = null) {
     if (node == null) return
 
     val nodeId = node.item.toString()
-    if (nodeId in alreadyAddedNodes) return
-    alreadyAddedNodes.add(nodeId)
 
     val graphNode = graph.addNode(nodeId)
+    println("Added node $nodeId")
+    if (childIndex != null) graphNode.setAttribute("ui.childIndex", childIndex)
 
     graphNode.setAttribute("ui.label", node.item.toString())
     graphNode.setAttribute("ui.style", "text-size: 30; text-color: black;")
@@ -33,26 +28,19 @@ fun addNode(
         "ui.style",
         "fill-color: $fillColor; stroke-mode: plain; stroke-color: black; stroke-width: 1px; $textOffset")
 
-    node.left?.let { left ->
-        addNode(left, graph, alreadyAddedNodes, alreadyAddedEdges)
-        node.parent?.let { parent ->
-            addEdge(parent.item.toString(), left.item.toString(), graph, alreadyAddedEdges)
+    node.leftChild?.let { firstChild ->
+        var childIndex = 0
+        var currentChild = firstChild
+        addNode(currentChild, graph, childIndex)
+        graph.addEdge("${nodeId}-${currentChild.item}", nodeId, currentChild.item.toString(), true)
+        currentChild = currentChild.right!!
+        ++childIndex
+        while (currentChild !== firstChild) {
+            addNode(currentChild, graph, childIndex)
+            graph.addEdge(
+                "${nodeId}-${currentChild.item}", nodeId, currentChild.item.toString(), true)
+            currentChild = currentChild.right!!
+            ++childIndex
         }
-        //        addEdge(nodeId, it.item.toString(), graph, alreadyAddedEdges)
-    }
-
-    node.right?.let { right ->
-        addNode(right, graph, alreadyAddedNodes, alreadyAddedEdges)
-        node.parent?.let { parent ->
-            addEdge(parent.item.toString(), right.item.toString(), graph, alreadyAddedEdges)
-        }
-        //        addEdge(nodeId, it.item.toString(), graph, alreadyAddedEdges)
-    }
-
-    //    node.parent?.let { addEdge(it.item.toString(), nodeId, graph, alreadyAddedEdges) }
-
-    node.leftChild?.let {
-        addNode(it, graph, alreadyAddedNodes, alreadyAddedEdges)
-        addEdge(nodeId, it.item.toString(), graph, alreadyAddedEdges)
     }
 }
