@@ -1,15 +1,27 @@
 import heaps.strict_fibonacci_heap.StrictFibonacciHeap
+import visualization.visualizeTree
 import visualization.visualizeTreeInteractive
 
 fun main() {
     val randomGeneration = false
+    val visualize = true
+    val interactive = false
     val nums =
         if (randomGeneration) generateIntegers(1234L, 15, 0..100)
         else
             intArrayOf(17, 27, 28, 11, 10, 2, 30, 26, 1, 22, 23, 7, 13, 24, 3, 12, 25, 6, 29, 21)
                 .toList()
-    val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap()
-    visualizeTreeInteractive(h, nums)
+    if (visualize) {
+        if (interactive) {
+            val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap()
+            visualizeTreeInteractive(h, nums)
+        } else {
+            val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap(nums)
+            visualizeTree(h)
+        }
+    } else {
+        val h: StrictFibonacciHeap<Int> = StrictFibonacciHeap(nums)
+    }
 
     //    val extracted = ArrayList<Int>()
     //    for (i in nums.indices) extracted.add(h.extractMin())

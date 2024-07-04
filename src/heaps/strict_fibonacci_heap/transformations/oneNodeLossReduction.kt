@@ -2,8 +2,6 @@ package heaps.strict_fibonacci_heap.transformations
 
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
-import heaps.strict_fibonacci_heap.utils.moveToActiveRoots
-import heaps.strict_fibonacci_heap.utils.moveToPositiveLoss
 
 fun <T : Comparable<T>> oneNodeLossReduction(x: NodeRecord<T>, heapRecord: HeapRecord<T>) {
     if (x.loss == null || x.loss!! < 2u)
@@ -18,14 +16,14 @@ fun <T : Comparable<T>> oneNodeLossReduction(x: NodeRecord<T>, heapRecord: HeapR
     // link x to the root
     link(x, root, heapRecord)
 
-    // set x's loss to zero
-    x.setLoss(0u, heapRecord)
-
-    // adjust fix-list for x (it was an active node, now it's an active root)
-    moveToActiveRoots(x, heapRecord)
-
-    // adjust fix-list for y
-    moveToPositiveLoss(y, heapRecord)
+    //    // set x's loss to zero
+    //    x.setLoss(0u, heapRecord)
+    //
+    //    // adjust fix-list for x (it was an active node, now it's an active root)
+    //    moveToActiveRoots(x, heapRecord)
+    //
+    //    // adjust fix-list for y
+    //    moveToPositiveLoss(y, heapRecord)
 }
 
 fun <T : Comparable<T>> canPerformOneNodeLossReduction(heapRecord: HeapRecord<T>): Boolean {

@@ -2,7 +2,6 @@ package heaps.strict_fibonacci_heap.transformations
 
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
-import heaps.strict_fibonacci_heap.utils.moveToActiveRoots
 import heaps.strict_fibonacci_heap.utils.sortPair
 
 fun <T : Comparable<T>> activeRootReduction(
@@ -21,9 +20,6 @@ fun <T : Comparable<T>> activeRootReduction(
 
     // link y to x, x.item < y.item
     link(y, x, heapRecord)
-
-    // possibly adjust the fix-list
-    moveToActiveRoots(x, heapRecord)
 }
 
 fun <T : Comparable<T>> canPerformActiveRootReduction(heapRecord: HeapRecord<T>): Boolean {

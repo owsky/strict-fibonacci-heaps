@@ -3,7 +3,6 @@ package heaps.strict_fibonacci_heap.transformations
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import heaps.strict_fibonacci_heap.utils.insertIntoCircularList
-import heaps.strict_fibonacci_heap.utils.moveToActiveRoots
 import heaps.strict_fibonacci_heap.utils.removeFromCircularList
 
 fun <T : Comparable<T>> rootDegreeReduction(
@@ -44,9 +43,6 @@ fun <T : Comparable<T>> rootDegreeReduction(
     // link z to y, y to x
     link(z, y, heapRecord)
     link(y, x, heapRecord)
-
-    // adjust fix-list for x, since it's now an active root
-    moveToActiveRoots(x, heapRecord)
 
     // if heapRecord's non-linkable child is not set, set it to x
     if (heapRecord.nonLinkableChild == null) heapRecord.nonLinkableChild = x

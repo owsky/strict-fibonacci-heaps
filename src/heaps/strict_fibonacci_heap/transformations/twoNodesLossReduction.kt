@@ -2,12 +2,8 @@
 
 package heaps.strict_fibonacci_heap.transformations
 
-import heaps.strict_fibonacci_heap.auxiliary_structures.FixListRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
-import heaps.strict_fibonacci_heap.utils.fixListRemove
-import heaps.strict_fibonacci_heap.utils.moveToActiveRoots
-import heaps.strict_fibonacci_heap.utils.moveToPositiveLoss
 import heaps.strict_fibonacci_heap.utils.sortPair
 
 fun <T : Comparable<T>> twoNodesLossReduction(
@@ -34,16 +30,17 @@ fun <T : Comparable<T>> twoNodesLossReduction(
     // link y to x
     link(y, x, heapRecord)
 
-    // set loss of x and y to zero
-    x.setLoss(0u, heapRecord)
-    y.setLoss(0u, heapRecord)
-
-    // adjust fix-list for x and y (loss is now zero)
-    fixListRemove(x.rank as FixListRecord<T>, heapRecord)
-    fixListRemove(y.rank as FixListRecord<T>, heapRecord)
-
-    // adjust fix-list for z (decreased rank, increased loss)
-    if (z.isActiveRoot()) moveToActiveRoots(z, heapRecord) else moveToPositiveLoss(z, heapRecord)
+    //    // set loss of x and y to zero
+    //    x.setLoss(0u, heapRecord)
+    //    y.setLoss(0u, heapRecord)
+    //
+    //    // adjust fix-list for x and y (loss is now zero)
+    //    fixListRemove(x.rank as FixListRecord<T>, heapRecord)
+    //    fixListRemove(y.rank as FixListRecord<T>, heapRecord)
+    //
+    //    // adjust fix-list for z (decreased rank, increased loss)
+    //    if (z.isActiveRoot()) moveToActiveRoots(z, heapRecord) else moveToPositiveLoss(z,
+    // heapRecord)
 }
 
 fun <T : Comparable<T>> canPerformTwoNodesLossReduction(heapRecord: HeapRecord<T>): Boolean {
