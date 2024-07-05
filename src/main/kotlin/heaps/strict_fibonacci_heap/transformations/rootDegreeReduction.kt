@@ -2,6 +2,7 @@ package heaps.strict_fibonacci_heap.transformations
 
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
+import heaps.strict_fibonacci_heap.utils.checkFixList
 import heaps.strict_fibonacci_heap.utils.insertIntoCircularList
 import heaps.strict_fibonacci_heap.utils.removeFromCircularList
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -34,8 +35,8 @@ fun <T : Comparable<T>> rootDegreeReduction(
             .let { (first, second, third) -> Triple(first, second, third) }
 
     // mark x and y as active
-    x.setActiveFromPassive(heapRecord.activeRecord, heapRecord.rankList, heapRecord)
-    y.setActiveFromPassive(heapRecord.activeRecord, heapRecord.rankList, heapRecord)
+    x.setActiveFromPassive(heapRecord)
+    y.setActiveFromPassive(heapRecord)
 
     // x is now an active root, so it becomes the leftmost child
     if (heapRecord.root!!.leftChild !== x) {
@@ -46,6 +47,7 @@ fun <T : Comparable<T>> rootDegreeReduction(
     }
 
     // link z to y, y to x
+    checkFixList(heapRecord)
     link(z, y, heapRecord)
     link(y, x, heapRecord)
 

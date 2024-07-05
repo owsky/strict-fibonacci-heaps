@@ -25,6 +25,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
             heapRecord.size = 1
             lookup[item] = heapRecord.root!!
         } else {
+            checkFixList(heapRecord) // DEBUG
             val newHeap = HeapRecord(item)
             meld(newHeap)
             checkFixList(heapRecord) // DEBUG
@@ -148,72 +149,74 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
     }
 
     override fun extractMin(): T {
+        checkFixList(heapRecord) // DEBUG
         if (getSize() == 0) throw NoSuchElementException("The heap is empty")
         val min =
             heapRecord.root?.item
                 ?: throw IllegalStateException("The heap is not empty but the root is null")
         logger.debug { "Deleting $min" }
         deleteMin()
+        checkFixList(heapRecord) // DEBUG
         return min
     }
 
     override fun decreaseKey(key: T, smallerKey: T) {
-        val x = lookup[key] ?: throw NoSuchElementException("Key not found")
-        x.item = smallerKey
-        val root = heapRecord.root!!
-        if (root === x) {
-            return
-        } else if (smallerKey < root.item) {
-            val tmp = root.item
-            root.item = smallerKey
-            x.item = tmp
-            val y = x.parent!!
-
-            val wasXActive = x.isActive()
-            val wasXActiveRoot = x.isActiveRoot()
-
-            link(x, root, heapRecord)
-
-            if (wasXActive && !wasXActiveRoot) {
-                // x becomes an active root
-                x.setLoss(0u, heapRecord)
-                moveToActiveRoots(x, heapRecord)
-                // decrease rank of y by one
-                y.decreaseRank(heapRecord)
-            }
-
-            // do a loss reduction if possible
-            val lastInFix = heapRecord.fixList!!
-            val sndLastInFix = lastInFix.left!!
-            if (lastInFix.node.isActive() &&
-                !lastInFix.node.isActiveRoot() &&
-                lastInFix.node.loss!! >= 2u)
-                oneNodeLossReduction(lastInFix.node, heapRecord)
-            else if (lastInFix.node.isActive() &&
-                !lastInFix.node.isActiveRoot() &&
-                sndLastInFix.node.isActive() &&
-                !sndLastInFix.node.isActiveRoot() &&
-                lastInFix.node.loss!! == 1u &&
-                sndLastInFix.node.loss!! == 1u)
-                twoNodesLossReduction(lastInFix.node, sndLastInFix.node, heapRecord)
-
-            // do six active root reductions and four root degree reductions in any order
-            var activeRootReductionsCounter = 0
-            var rootDegreeReductionsCounter = 0
-            while (activeRootReductionsCounter < 6 && rootDegreeReductionsCounter < 4) {
-                // check if active root reduction is possible
-                if (canPerformActiveRootReduction(heapRecord)) {
-                    performActiveRootReduction(heapRecord)
-                    ++activeRootReductionsCounter
-                }
-
-                // check if root degree reduction is possible
-                if (canPerformRootDegreeReduction(heapRecord)) {
-                    performRootDegreeReduction(heapRecord)
-                    ++rootDegreeReductionsCounter
-                }
-            }
-        }
+        //        val x = lookup[key] ?: throw NoSuchElementException("Key not found")
+        //        x.item = smallerKey
+        //        val root = heapRecord.root!!
+        //        if (root === x) {
+        //            return
+        //        } else if (smallerKey < root.item) {
+        //            val tmp = root.item
+        //            root.item = smallerKey
+        //            x.item = tmp
+        //            val y = x.parent!!
+        //
+        //            val wasXActive = x.isActive()
+        //            val wasXActiveRoot = x.isActiveRoot()
+        //
+        //            link(x, root, heapRecord)
+        //
+        //            if (wasXActive && !wasXActiveRoot) {
+        //                // x becomes an active root
+        //                x.setLoss(0u, heapRecord)
+        //                moveToActiveRoots(x, heapRecord)
+        //                // decrease rank of y by one
+        //                y.decreaseRank(heapRecord)
+        //            }
+        //
+        //            // do a loss reduction if possible
+        //            val lastInFix = heapRecord.fixList!!
+        //            val sndLastInFix = lastInFix.left!!
+        //            if (lastInFix.node.isActive() &&
+        //                !lastInFix.node.isActiveRoot() &&
+        //                lastInFix.node.loss!! >= 2u)
+        //                oneNodeLossReduction(lastInFix.node, heapRecord)
+        //            else if (lastInFix.node.isActive() &&
+        //                !lastInFix.node.isActiveRoot() &&
+        //                sndLastInFix.node.isActive() &&
+        //                !sndLastInFix.node.isActiveRoot() &&
+        //                lastInFix.node.loss!! == 1u &&
+        //                sndLastInFix.node.loss!! == 1u)
+        //                twoNodesLossReduction(lastInFix.node, sndLastInFix.node, heapRecord)
+        //
+        //            // do six active root reductions and four root degree reductions in any order
+        //            var activeRootReductionsCounter = 0
+        //            var rootDegreeReductionsCounter = 0
+        //            while (activeRootReductionsCounter < 6 && rootDegreeReductionsCounter < 4) {
+        //                // check if active root reduction is possible
+        //                if (canPerformActiveRootReduction(heapRecord)) {
+        //                    performActiveRootReduction(heapRecord)
+        //                    ++activeRootReductionsCounter
+        //                }
+        //
+        //                // check if root degree reduction is possible
+        //                if (canPerformRootDegreeReduction(heapRecord)) {
+        //                    performRootDegreeReduction(heapRecord)
+        //                    ++rootDegreeReductionsCounter
+        //                }
+        //            }
+        //        }
     }
 
     override fun getSize(): Int {

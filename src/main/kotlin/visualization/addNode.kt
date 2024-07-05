@@ -16,10 +16,12 @@ fun addNode(node: NodeRecord<Int>?, graph: Graph, childIndex: Int? = null) {
 
     val textOffset = if (node.item in 10..99) "text-offset: 0, -8;" else "text-offset: -1, -6;"
     val fillColor: String
-    if (node.isActiveRoot()) graphNode.setAttribute("ui.activeRoot")
+    if (node.isActiveRoot()) {
+        graphNode.setAttribute("ui.activeRoot")
+    }
     if (node.isActive()) {
         graphNode.setAttribute("ui.rank", node.getRank().rankNumber)
-        fillColor = "white"
+        fillColor = if (node.isActiveRoot()) "yellow" else "white"
     } else {
         fillColor = "red"
     }

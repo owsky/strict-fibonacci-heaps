@@ -2,11 +2,6 @@
 
 package heaps.strict_fibonacci_heap.auxiliary_structures
 
-import heaps.strict_fibonacci_heap.utils.fixListRemove
-import heaps.strict_fibonacci_heap.utils.moveToActiveRoots
-import heaps.strict_fibonacci_heap.utils.moveToPositiveLoss
-import heaps.strict_fibonacci_heap.utils.updateRankPointersBeforeRemove
-
 class NodeRecord<T : Comparable<T>>(var item: T) {
     var left: NodeRecord<T>? = null
     var right: NodeRecord<T>? = null
@@ -30,15 +25,6 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
             }
         }
 
-    fun processRank(fn: () -> Any, kind: RankEnum): Any {
-        if ((kind == RankEnum.RANK_LIST_RECORD && rank is RankListRecord<*>) ||
-            (kind == RankEnum.FIX_LIST_RECORD && rank is FixListRecord<*>)) {
-            return fn()
-        } else {
-            throw IllegalAccessException("Trying to access the wrong rank pointer")
-        }
-    }
-
     fun isActiveRoot(): Boolean {
         return isActive() && (parent != null && !parent!!.isActive())
     }
@@ -56,60 +42,21 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         return isPassive()
     }
 
-    fun isInFixList(): Boolean {
-        return isActiveRoot() || (isActive() && loss != null && loss!! > 0u)
-    }
-
     fun increaseRank(heapRecord: HeapRecord<T>) {
+        val currRank = getRank()
         val nextRank: RankListRecord<T>
-        when (rank) {
-            is RankListRecord<*> -> {
-                val rankRecord = rank as RankListRecord<T>
-                if (rankRecord.inc == null) {
-                    // if next rank doesn't exist, create it
-                    nextRank = RankListRecord(rankRecord.rankNumber + 1)
-                    rankRecord.inc = nextRank
-                    nextRank.dec = rankRecord
-                } else {
-                    nextRank = rankRecord.inc!!
-                }
-            }
-            is FixListRecord<*> -> {
-                val fixRecord = rank as FixListRecord<T>
-                val rankRecord = fixRecord.rank
-                if (rankRecord.inc == null) {
-                    // if next rank doesn't exist, create it
-                    nextRank = RankListRecord(rankRecord.rankNumber + 1)
-                    rankRecord.inc = nextRank
-                    nextRank.dec = rankRecord
-                } else {
-                    nextRank = rankRecord.inc!!
-                }
-            }
-            else -> {
-                throw IllegalArgumentException("Unknown record type")
-            }
-        }
-        setRank(nextRank, heapRecord)
+        if (currRank.inc == null) {
+            nextRank = RankListRecord(currRank.rankNumber + 1)
+            currRank.inc = nextRank
+            nextRank.dec = currRank
+        } else nextRank = currRank.inc!!
+        changeRank(nextRank, heapRecord)
     }
 
     fun decreaseRank(heapRecord: HeapRecord<T>) {
-        val prevRank: RankListRecord<T>
-        when (rank) {
-            is RankListRecord<*> -> {
-                val rankRecord = rank as RankListRecord<T>
-                prevRank = rankRecord.dec!!
-            }
-            is FixListRecord<*> -> {
-                val fixRecord = rank as FixListRecord<T>
-                val rankRecord = fixRecord.rank
-                prevRank = rankRecord.dec!!
-            }
-            else -> {
-                throw IllegalArgumentException("Unknown record type")
-            }
-        }
-        setRank(prevRank, heapRecord)
+        val currRank = getRank()
+        val prevRank = currRank.dec!!
+        changeRank(prevRank, heapRecord)
     }
 
     fun getRank(): RankListRecord<T> {
@@ -121,50 +68,47 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
                 (rank as FixListRecord<T>).rank
             }
             else -> {
-                throw IllegalArgumentException("Unknown record type")
+                throw IllegalArgumentException("Rank pointer isn't pointing to a valid type")
             }
         }
     }
 
-    fun setRank(newRank: RankListRecord<T>?, heapRecord: HeapRecord<T>) {
-        val currRank = getRank()
-        --currRank.refCount
-
-        if (newRank == null) {
-            rank = null
-            return
-        }
-
+    fun changeRank(newRank: RankListRecord<T>, heapRecord: HeapRecord<T>) {
+        removeRank(keepLoss = true, heapRecord)
         ++newRank.refCount
-        when (rank) {
-            is RankListRecord<*>,
-            null -> {
-                rank = newRank
-            }
-            is FixListRecord<*> -> {
-                val rankFix = rank as FixListRecord<T>
-                updateRankPointersBeforeRemove(rankFix, heapRecord)
-                rankFix.rank = newRank
-            }
-            else -> {
-                throw IllegalArgumentException("Unknown record type")
-            }
+
+        if (isActiveRoot() || isActive() && loss != null && loss!! > 0u) {
+            rank = FixListRecord(this, newRank)
+            if (isActiveRoot()) heapRecord.fixListUpdatePositionActiveRoot(rank as FixListRecord<T>)
+            else heapRecord.fixListUpdatePositionPositiveLoss(rank as FixListRecord<T>)
+        } else {
+            rank = newRank
         }
     }
 
-    fun setActiveFromPassive(
-        activeRecord: ActiveRecord,
-        zeroRank: RankListRecord<T>,
-        heapRecord: HeapRecord<T>
-    ) {
-        active = activeRecord
+    fun setRankToRankListRecord() {
+        rank = getRank()
+    }
+
+    fun removeRank(keepLoss: Boolean, heapRecord: HeapRecord<T>) {
+        val currRank = getRank()
+        currRank.refCount--
+
+        if (rank is FixListRecord<*>) heapRecord.fixListRemove(rank as FixListRecord<T>)
+        rank = null
+        if (!keepLoss) loss = null
+    }
+
+    fun setActiveFromPassive(heapRecord: HeapRecord<T>) {
+        active = heapRecord.activeRecord
         ++active!!.refCount
         loss = 0u
+        val zeroRank = heapRecord.rankList
         if (parent != null && parent!!.isPassive()) {
+            // this becomes an active root
             val xFix = FixListRecord(this, zeroRank)
             rank = xFix
-            moveToActiveRoots(this, heapRecord)
-            zeroRank.activeRoots?.let { zeroRank.activeRoots = xFix }
+            heapRecord.fixListUpdatePositionActiveRoot(xFix)
         } else {
             rank = zeroRank
         }
@@ -172,49 +116,27 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
     }
 
     fun setActiveRootFromActive(heapRecord: HeapRecord<T>) {
-        val xFix: FixListRecord<T>
-        val currRank: RankListRecord<T>
         if (loss!! > 0u) {
-            // check if this is in fix-list as an active node
-            xFix = rank as FixListRecord<T>
-            currRank = xFix.rank
-            if (heapRecord.singles === xFix) {
-                val nextInFix = xFix.right!!
-
-                if (nextInFix == xFix || nextInFix.node.isActiveRoot()) heapRecord.singles = null
-                else if (!nextInFix.rank.isLossTransformable()) heapRecord.singles = nextInFix
-            }
+            // if this is in fix-list as an active node with positive loss, remove it
+            heapRecord.fixListRemove(rank as FixListRecord<T>)
         } else {
             if (rank is FixListRecord<*>)
                 throw IllegalArgumentException(
                     "Trying to set an active root to active root. Node key: $item")
-            currRank = getRank()
-            xFix = FixListRecord(this, currRank)
-            rank = xFix
         }
-
+        // set loss to zero and create a new fix-list record
         loss = 0u
-        moveToActiveRoots(this, heapRecord)
-        currRank.activeRoots?.let { currRank.activeRoots = xFix }
+        rank = FixListRecord(this, getRank())
+        // insert the new fix-list node onto the fix-list
+        heapRecord.fixListUpdatePositionActiveRoot(rank as FixListRecord<T>)
     }
 
     fun setPassive(heapRecord: HeapRecord<T>) {
         --active!!.refCount
         active = null
 
-        when (rank) {
-            is RankListRecord<*> -> {
-                val rankRecord = rank as RankListRecord<T>
-                --rankRecord.refCount
-            }
-            is FixListRecord<*> -> {
-                val fixRecord = rank as FixListRecord<T>
-                --fixRecord.rank.refCount
-                fixListRemove(fixRecord, heapRecord)
-            }
-        }
-        rank = null
-        loss = null
+        removeRank(keepLoss = false, heapRecord)
+        if (rank is FixListRecord<*>) heapRecord.fixListRemove(rank as FixListRecord<T>)
 
         // all active children become active roots
         leftChild?.forEach { currentChild ->
@@ -229,25 +151,24 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         loss = newLoss
         if (newLoss == 0u && !isActiveRoot()) {
             // if not active root, remove from fix-list if present
-            if (rank is FixListRecord<*>) fixListRemove(rank as FixListRecord<T>, heapRecord)
+            if (rank is FixListRecord<*>) heapRecord.fixListRemove(rank as FixListRecord<T>)
         } else if (newLoss > 0u) {
-            // update fix-list if needed
+            // update fix-list
+            if (rank is RankListRecord<*>) {
+                val currRank = getRank()
+                rank = FixListRecord(this, currRank)
+                currRank.setLossPointer(rank as FixListRecord<T>)
+            }
             val xFix = rank as FixListRecord<T>
-            moveToPositiveLoss(this, heapRecord)
-            xFix.rank.loss?.let { xFix.rank.loss = xFix }
+            heapRecord.fixListUpdatePositionPositiveLoss(xFix)
         }
     }
 
     // demote an active root to being just active
     fun demoteActiveRoot(heapRecord: HeapRecord<T>) {
         val xFix = rank as FixListRecord<T>
-        if (xFix.rank.activeRoots === xFix) {
-            // if the node's rank's activeRoots pointer points to this, then update it
-            val nextInFix = xFix.right!!
-            if (nextInFix.rank === xFix.rank) xFix.rank.activeRoots = nextInFix
-            else xFix.rank.activeRoots = null
-        }
-        fixListRemove(xFix, heapRecord)
+        xFix.rank.removeFixListPointers(xFix)
+        heapRecord.fixListRemove(xFix)
     }
 
     fun forEach(action: (NodeRecord<T>) -> Unit) {

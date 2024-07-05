@@ -19,7 +19,6 @@ import org.graphstream.ui.view.Viewer
 
 fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
     val latch = CountDownLatch(1)
-    var currentIndex = 0
 
     SwingUtilities.invokeLater {
         System.setProperty("org.graphstream.ui", "swing")
@@ -84,14 +83,13 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
         val closeButton = JButton("Close")
 
         addNodeButton.addActionListener {
-            if (currentIndex < nums.size) {
-                heap.insert(nums[currentIndex])
-                currentIndex++
+            if (heap.getSize() < nums.size) {
+                heap.insert(nums[heap.getSize()])
                 updateLayout()
                 addNodeButton.text =
-                    if (currentIndex < nums.size) "Add Node (${nums[currentIndex]})"
+                    if (heap.getSize() < nums.size) "Add Node (${nums[heap.getSize()]})"
                     else "No More Nodes"
-                addNodeButton.isEnabled = currentIndex < nums.size
+                addNodeButton.isEnabled = heap.getSize() < nums.size
             }
         }
 
@@ -127,7 +125,9 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
             })
 
         // Set initial text for add node button
-        addNodeButton.text = if (nums.isNotEmpty()) "Add Node (${nums[0]})" else "No Nodes to Add"
+        addNodeButton.text =
+            if (heap.getSize() < nums.size) "Add Node (${nums[heap.getSize()]})"
+            else "No Nodes to Add"
         addNodeButton.isEnabled = nums.isNotEmpty()
 
         dialog.isVisible = true
