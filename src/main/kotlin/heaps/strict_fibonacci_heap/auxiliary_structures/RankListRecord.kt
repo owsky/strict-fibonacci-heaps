@@ -18,10 +18,18 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
         }
     }
 
-    fun removeActiveRootsPointer(xFix: FixListRecord<T>) {
+    fun removeActiveRootsPointer(xFix: FixListRecord<T>, heapRecord: HeapRecord<T>) {
         if (activeRoots === xFix) {
             // try to select a new candidate for activeRoots
-            activeRoots = if (isActiveRootTransformable()) xFix.right!! else null
+            val nextInFix = xFix.right!!
+            activeRoots =
+                if (nextInFix !== xFix &&
+                    nextInFix.node.isActiveRoot() &&
+                    nextInFix.rank === xFix.rank) {
+                    nextInFix
+                } else {
+                    null
+                }
         }
     }
 
@@ -32,16 +40,24 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
         }
     }
 
-    fun removeLossPointer(xFix: FixListRecord<T>) {
+    fun removeLossPointer(xFix: FixListRecord<T>, heapRecord: HeapRecord<T>) {
         if (loss === xFix) {
             // try to select a new candidate for loss
-            loss = if (isLossTransformable()) xFix.left!! else null
+            val prevInFix = xFix.left!!
+            loss =
+                if (prevInFix !== xFix &&
+                    !prevInFix.node.isActiveRoot() &&
+                    prevInFix.rank === xFix.rank) {
+                    prevInFix
+                } else {
+                    null
+                }
         }
     }
 
-    fun removeFixListPointers(xFix: FixListRecord<T>) {
-        removeActiveRootsPointer(xFix)
-        removeLossPointer(xFix)
+    fun removeFixListPointers(xFix: FixListRecord<T>, heapRecord: HeapRecord<T>) {
+        removeActiveRootsPointer(xFix, heapRecord)
+        removeLossPointer(xFix, heapRecord)
     }
 
     fun isLossTransformable(): Boolean {

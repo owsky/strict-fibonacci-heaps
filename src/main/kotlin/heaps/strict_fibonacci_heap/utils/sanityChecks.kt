@@ -7,10 +7,15 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+fun <T : Comparable<T>> printDebug(heapRecord: HeapRecord<T>) {
+    printFixList(heapRecord)
+    printRankList(heapRecord)
+}
+
 fun <T : Comparable<T>> printRankList(heapRecord: HeapRecord<T>) {
     var text = "Rank list:"
     var currRank: RankListRecord<T>? = heapRecord.rankList
-    while (currRank!!.inc != null) {
+    while (currRank != null) {
         if (currRank.rankNumber > 0) text += "-->"
         text +=
             "(Rank: ${currRank.rankNumber}, activeRoots: ${currRank.activeRoots?.node?.item}, loss: ${currRank.loss?.node?.item})"
@@ -75,7 +80,7 @@ fun <T : Comparable<T>> printFixList(heapRecord: HeapRecord<T>) {
             text += formatFixNode(currentFix, heapRecord)
             currentFix = currentFix.right!!
         }
-        text += formatFixNode(currentFix, heapRecord)
+        text += "--" + formatFixNode(currentFix, heapRecord)
         logger.debug { text }
     }
 }
@@ -153,19 +158,19 @@ fun <T : Comparable<T>> checkFixList(heapRecord: HeapRecord<T>) {
     singles?.let {
         if (singles.node.isActiveRoot())
             throwIllegalState(
-                "Singles is pointing to node with key: ${singles.node.item} which is an active root.",
+                "singlesLoss is pointing to node with key: ${singles.node.item} which is an active root.",
                 heapRecord)
         else if (singles.node.isPassive())
             throwIllegalState(
-                "Singles is pointing to node with key: ${singles.node.item} which is passive.",
+                "singlesLoss is pointing to node with key: ${singles.node.item} which is passive.",
                 heapRecord)
         else if (singles.node.loss == null)
             throwIllegalState(
-                "Singles is pointing to node with key: ${singles.node.item} which has loss set to null.",
+                "singlesLoss is pointing to node with key: ${singles.node.item} which has loss set to null.",
                 heapRecord)
         else if (singles.node.loss == 0u)
             throwIllegalState(
-                "Singles is pointing to node with key: ${singles.node.item} which has loss set to 0.",
+                "singlesLoss is pointing to node with key: ${singles.node.item} which has loss set to 0.",
                 heapRecord)
     }
 

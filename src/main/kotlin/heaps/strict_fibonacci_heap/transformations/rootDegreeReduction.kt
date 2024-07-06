@@ -35,8 +35,11 @@ fun <T : Comparable<T>> rootDegreeReduction(
             .let { (first, second, third) -> Triple(first, second, third) }
 
     // mark x and y as active
+    checkFixList(heapRecord)
     x.setActiveFromPassive(heapRecord)
+    checkFixList(heapRecord)
     y.setActiveFromPassive(heapRecord)
+    checkFixList(heapRecord)
 
     // x is now an active root, so it becomes the leftmost child
     if (heapRecord.root!!.leftChild !== x) {

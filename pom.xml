@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.example</groupId>
-    <artifactId>strict-fibonacci-heaps</artifactId>
+    <artifactId>strict_fibonacci_heaps</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
