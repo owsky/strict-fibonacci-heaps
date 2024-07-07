@@ -1,6 +1,7 @@
 package visualization
 
 import heaps.strict_fibonacci_heap.StrictFibonacciHeap
+import heaps.strict_fibonacci_heap.utils.printDebug
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.WindowAdapter
@@ -81,6 +82,7 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
         val addNodeButton = JButton("Add Node")
         val deleteMinButton = JButton("Delete Min")
         val closeButton = JButton("Close")
+        val printFixListButton = JButton("Print Fix-List")
 
         addNodeButton.addActionListener {
             if (heap.getSize() < nums.size) {
@@ -106,8 +108,11 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
             exitProcess(0)
         }
 
+        printFixListButton.addActionListener { printDebug(heap.heapRecord) }
+
         buttonPanel.add(addNodeButton)
         buttonPanel.add(deleteMinButton)
+        buttonPanel.add(printFixListButton)
         buttonPanel.add(closeButton)
         dialog.add(buttonPanel, BorderLayout.SOUTH)
 

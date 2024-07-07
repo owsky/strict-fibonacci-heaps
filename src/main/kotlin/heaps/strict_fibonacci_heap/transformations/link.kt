@@ -2,7 +2,6 @@ package heaps.strict_fibonacci_heap.transformations
 
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
-import heaps.strict_fibonacci_heap.utils.checkFixList
 import heaps.strict_fibonacci_heap.utils.insertIntoCircularList
 import heaps.strict_fibonacci_heap.utils.removeFromCircularList
 
@@ -51,15 +50,12 @@ fun <T : Comparable<T>> link(x: NodeRecord<T>, y: NodeRecord<T>, heapRecord: Hea
         //
         x.demoteActiveRoot(heapRecord)
     }
-    checkFixList(heapRecord) // DEBUG
 
     // if both x and y are active, increase the rank of y
     if (x.isActive() && y.isActive()) y.increaseRank(heapRecord)
-    checkFixList(heapRecord) // DEBUG
 
     // if x is not an active root, but it is active and y is passive, then x becomes an active root
     if (!xIsActiveRoot && x.isActive() && y.isPassive()) x.setActiveRootFromActive(heapRecord)
-    checkFixList(heapRecord) // DEBUG
 
     // insert x into y's children
     if (y.leftChild == null) {
@@ -88,5 +84,4 @@ fun <T : Comparable<T>> link(x: NodeRecord<T>, y: NodeRecord<T>, heapRecord: Hea
             if (x.isActive()) y.leftChild = x
         }
     }
-    checkFixList(heapRecord) // DEBUG
 }

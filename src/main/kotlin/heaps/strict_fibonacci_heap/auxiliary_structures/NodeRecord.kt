@@ -2,7 +2,6 @@
 
 package heaps.strict_fibonacci_heap.auxiliary_structures
 
-import heaps.strict_fibonacci_heap.utils.checkFixList
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -59,7 +58,6 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
             nextRank.dec = currRank
         } else nextRank = currRank.inc!!
         changeRank(nextRank, heapRecord)
-        checkFixList(heapRecord)
     }
 
     fun decreaseRank(heapRecord: HeapRecord<T>) {
@@ -69,7 +67,6 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         val currRank = getRank()
         val prevRank = currRank.dec!!
         changeRank(prevRank, heapRecord)
-        checkFixList(heapRecord)
     }
 
     fun getRank(): RankListRecord<T> {
@@ -86,7 +83,7 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         }
     }
 
-    fun changeRank(newRank: RankListRecord<T>, heapRecord: HeapRecord<T>) {
+    private fun changeRank(newRank: RankListRecord<T>, heapRecord: HeapRecord<T>) {
         logger.debug {
             "Changing rank for node $item from ${getRank().rankNumber} to ${newRank.rankNumber}"
         }
@@ -96,11 +93,9 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         ++newRank.refCount
 
         if (isOnFixList) heapRecord.insertIntoFixList(this)
-
-        checkFixList(heapRecord)
     }
 
-    fun removeRank(keepLoss: Boolean, heapRecord: HeapRecord<T>) {
+    private fun removeRank(keepLoss: Boolean, heapRecord: HeapRecord<T>) {
         logger.debug { "Removing rank for node $item" }
         if (rank == null) return
         val currRank = getRank()
@@ -124,9 +119,11 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
             //
             heapRecord.insertIntoFixList(this)
         }
-
         ++zeroRank.refCount
-        checkFixList(heapRecord)
+
+        leftChild?.forEach {
+            if (it.rank is FixListRecord<*> && it.loss == 0u) it.demoteActiveRoot(heapRecord)
+        }
     }
 
     fun setActiveRootFromActive(heapRecord: HeapRecord<T>) {
@@ -150,7 +147,6 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
         leftChild?.forEach { currentChild ->
             if (currentChild.isActive()) currentChild.setActiveRootFromActive(heapRecord)
         }
-        checkFixList(heapRecord)
     }
 
     fun setLoss(newLoss: UInt, heapRecord: HeapRecord<T>) {
@@ -169,14 +165,12 @@ class NodeRecord<T : Comparable<T>>(var item: T) {
             }
             heapRecord.insertIntoFixList(this)
         }
-        checkFixList(heapRecord)
     }
 
     // demote an active root to being just active
     fun demoteActiveRoot(heapRecord: HeapRecord<T>) {
         logger.debug { "Setting active root $item to active" }
         heapRecord.fixListRemove(rank as FixListRecord<T>, true)
-        checkFixList(heapRecord)
     }
 
     fun forEach(action: (NodeRecord<T>) -> Unit) {

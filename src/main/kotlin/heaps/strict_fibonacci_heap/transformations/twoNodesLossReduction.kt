@@ -35,18 +35,16 @@ fun <T : Comparable<T>> twoNodesLossReduction(
 }
 
 fun <T : Comparable<T>> canPerformTwoNodesLossReduction(heapRecord: HeapRecord<T>): Boolean {
-    heapRecord.fixList?.let { fstLastInFix ->
-        val sndLastInFix = fstLastInFix.left!!
-        return fstLastInFix !== sndLastInFix &&
-            fstLastInFix.rank === sndLastInFix.rank &&
-            fstLastInFix.node.loss == 1u &&
-            sndLastInFix.node.loss == 1u
+    heapRecord.fixListPartFour?.let { n1 ->
+        n1.right?.let { n2 ->
+            return n1.rank === n2.rank && n1.node.loss == 1u && n2.node.loss == 1u
+        }
     }
     return false
 }
 
 fun <T : Comparable<T>> performTwoNodesLossReduction(heapRecord: HeapRecord<T>) {
-    val fstLastInFix = heapRecord.fixList!!
-    val sndLastInFix = fstLastInFix.left!!
-    twoNodesLossReduction(fstLastInFix.node, sndLastInFix.node, heapRecord)
+    val n1 = heapRecord.fixListPartFour!!
+    val n2 = n1.right!!
+    twoNodesLossReduction(n1.node, n2.node, heapRecord)
 }

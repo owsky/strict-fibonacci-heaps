@@ -12,8 +12,12 @@ fun <T : Comparable<T>> activeRootReduction(
     n2: NodeRecord<T>,
     heapRecord: HeapRecord<T>
 ) {
-    if (!n1.isActiveRoot() || !n2.isActiveRoot())
-        throw IllegalArgumentException("Nodes should be an active root")
+    if (!n1.isActiveRoot())
+        throw IllegalArgumentException(
+            "Trying to perform an active root reduction between nodes ${n1.item} and ${n2.item} but ${n1.item} is not an active root")
+    if (!n2.isActiveRoot())
+        throw IllegalArgumentException(
+            "Trying to perform an active root reduction between nodes ${n1.item} and ${n2.item} but ${n2.item} is not an active root")
     if (n1.getRank() !== n2.getRank())
         throw IllegalArgumentException("Nodes should have the same rank")
 
@@ -31,18 +35,11 @@ fun <T : Comparable<T>> activeRootReduction(
 }
 
 fun <T : Comparable<T>> canPerformActiveRootReduction(heapRecord: HeapRecord<T>): Boolean {
-    val lastInFix = heapRecord.fixList ?: return false
-    val firstInFix = lastInFix.right!!
-    val sndInFix = firstInFix.right!!
-
-    return firstInFix !== sndInFix &&
-        firstInFix.node.isActiveRoot() &&
-        sndInFix.node.isActiveRoot() &&
-        firstInFix.rank === sndInFix.rank
+    return heapRecord.fixListPartOne != null
 }
 
 fun <T : Comparable<T>> performActiveRootReduction(heapRecord: HeapRecord<T>) {
-    val firstInFix = heapRecord.fixList!!.right!!
-    val sndInFix = firstInFix.right!!
-    activeRootReduction(firstInFix.node, sndInFix.node, heapRecord)
+    val n1 = heapRecord.fixListPartOne!!
+    val n2 = n1.right!!
+    activeRootReduction(n1.node, n2.node, heapRecord)
 }

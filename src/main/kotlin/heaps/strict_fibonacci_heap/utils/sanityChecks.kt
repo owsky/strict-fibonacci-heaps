@@ -4,6 +4,7 @@ import heaps.strict_fibonacci_heap.auxiliary_structures.FixListRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.RankListRecord
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlin.math.ln
 
 private val logger = KotlinLogging.logger {}
 
@@ -52,126 +53,78 @@ fun <T : Comparable<T>> checkRankPointers(rank: RankListRecord<T>, heapRecord: H
     }
 }
 
-fun <T : Comparable<T>> formatFixNode(
-    currentFix: FixListRecord<T>,
-    heapRecord: HeapRecord<T>
-): String {
-    val lastInFix = heapRecord.fixList
-    val singles = heapRecord.singles
-    var text =
-        if (currentFix.node.isActiveRoot())
-            "(${currentFix.node.item}, Active Root, Loss: ${currentFix.node.loss}, Rank: ${currentFix.rank.rankNumber}"
-        else
-            "(${currentFix.node.item}, Positive Loss, Loss: ${currentFix.node.loss}, Rank: ${currentFix.rank.rankNumber}"
-    if (singles === currentFix) text += ", Singles"
-    if (lastInFix === currentFix) text += ", Tail"
-    text += ")"
-    return text
+fun <T : Comparable<T>> formatFixNode(currentFix: FixListRecord<T>): String {
+    return "(${currentFix.node.item}, ${currentFix.fixListPart.toString()}, Loss: ${currentFix.node.loss}, Rank: ${currentFix.rank.rankNumber})"
 }
 
 fun <T : Comparable<T>> printFixList(heapRecord: HeapRecord<T>) {
-    val lastInFix = heapRecord.fixList
+    var text = ""
 
-    lastInFix?.let {
-        var currentFix = lastInFix.right!!
-        var text = "FixList: "
-        while (currentFix !== lastInFix) {
-            if (currentFix !== lastInFix.right) text += "--"
-            text += formatFixNode(currentFix, heapRecord)
-            currentFix = currentFix.right!!
-        }
-        text += "--" + formatFixNode(currentFix, heapRecord)
-        logger.debug { text }
+    heapRecord.fixListForEach { currentFix ->
+        text += if (text.isEmpty()) "FixList: " else "--"
+        text += formatFixNode(currentFix)
     }
+
+    logger.debug { text }
 }
 
 fun <T : Comparable<T>> checkFixList(heapRecord: HeapRecord<T>) {
-    val lastInFix = heapRecord.fixList
-    val singles = heapRecord.singles
     val nodes = HashSet<T>()
 
-    // check all nodes active
-    lastInFix?.let {
-        var previous: FixListRecord<T>? = null
-        val firstInFix = lastInFix.right!!
-        firstInFix.forEach { currentFix ->
-            if (currentFix.node.item in nodes) {
-                throwIllegalState(
-                    "Node with key: ${currentFix.node.item} is duplicate in the fix-list",
-                    heapRecord)
-            } else nodes.add(currentFix.node.item)
+    var previous: FixListRecord<T>? = null
+    heapRecord.fixListForEach { currentFix ->
+        if (currentFix.node.item in nodes) {
+            throwIllegalState(
+                "Node with key: ${currentFix.node.item} is duplicate in the fix-list", heapRecord)
+        } else nodes.add(currentFix.node.item)
 
-            if (currentFix.node.isPassive()) {
+        if (currentFix.node.isPassive()) {
+            throwIllegalState(
+                "Node with key: ${currentFix.node.item} is in fix-list and is passive.", heapRecord)
+        }
+        if (previous == null) previous = currentFix
+        else {
+            if (previous!!.node.isActiveRoot() &&
+                currentFix.node.isActiveRoot() &&
+                !previous!!.rank.isActiveRootTransformable() &&
+                currentFix.rank.isActiveRootTransformable())
                 throwIllegalState(
-                    "Node with key: ${currentFix.node.item} is in fix-list and is passive.",
+                    "Previous node ${previous!!.node.item} on the fix-list isn't active root transformable but current ${currentFix.node.item} is",
                     heapRecord)
-            }
-            if (previous == null) previous = currentFix
-            else {
-                if (previous!!.node.isActiveRoot() &&
-                    currentFix.node.isActiveRoot() &&
-                    !previous!!.rank.isActiveRootTransformable() &&
-                    currentFix.rank.isActiveRootTransformable())
-                    throwIllegalState(
-                        "Previous node ${previous!!.node.item} on the fix-list isn't active root transformable but current ${currentFix.node.item} is",
-                        heapRecord)
-                else if (!previous!!.node.isActiveRoot() && currentFix.node.isActiveRoot())
-                    throwIllegalState(
-                        "Previous node ${previous!!.node.item} on the fix-list is not an active root but current ${currentFix.node.item} is",
-                        heapRecord)
-                else if (!previous!!.node.isActiveRoot() &&
-                    !currentFix.node.isActiveRoot() &&
-                    previous!!.rank.isLossTransformable() &&
-                    !currentFix.rank.isLossTransformable())
-                    throwIllegalState(
-                        "Previous node ${previous!!.node.item} on the fix-list is loss transformable but current ${currentFix.node.item} isn't",
-                        heapRecord)
-
-                if (currentFix.node.isActiveRoot() && currentFix.node.loss!! > 0u)
-                    throwIllegalState(
-                        "Node ${currentFix.node.item} on the fix-list is an active root but its loss is greater than 0",
-                        heapRecord)
-                else if (!currentFix.node.isActiveRoot() && currentFix.node.loss!! == 0u)
-                    throwIllegalState(
-                        "Node ${currentFix.node.item} on the fix-list isn't an active root and its loss is equal to 0",
-                        heapRecord)
-            }
-
-            if (currentFix.node.isActiveRoot() && currentFix.rank.activeRoots == null)
+            else if (!previous!!.node.isActiveRoot() && currentFix.node.isActiveRoot())
                 throwIllegalState(
-                    "Node ${currentFix.node.item} is an active root, but its rank ${currentFix.rank.rankNumber} has its activeRoots pointer set to null",
+                    "Previous node ${previous!!.node.item} on the fix-list is not an active root but current ${currentFix.node.item} is",
                     heapRecord)
-            else if (!currentFix.node.isActiveRoot() && currentFix.rank.loss == null)
+            else if (!previous!!.node.isActiveRoot() &&
+                !currentFix.node.isActiveRoot() &&
+                previous!!.rank.isLossTransformable() &&
+                !currentFix.rank.isLossTransformable())
                 throwIllegalState(
-                    "Node ${currentFix.node.item} is a node with positive loss, but its rank ${currentFix.rank.rankNumber} has its loss pointer set to null",
+                    "Previous node ${previous!!.node.item} on the fix-list is loss transformable but current ${currentFix.node.item} isn't",
                     heapRecord)
 
-            if (currentFix.node.loss == null)
+            if (currentFix.node.isActiveRoot() && currentFix.node.loss!! > 0u)
                 throwIllegalState(
-                    "Node ${currentFix.node.item} is on the fix-list with loss set to null",
+                    "Node ${currentFix.node.item} on the fix-list is an active root but its loss is greater than 0",
+                    heapRecord)
+            else if (!currentFix.node.isActiveRoot() && currentFix.node.loss!! == 0u)
+                throwIllegalState(
+                    "Node ${currentFix.node.item} on the fix-list isn't an active root and its loss is equal to 0",
                     heapRecord)
         }
-    }
 
-    // if singles, check if all nodes to the right are active with positive loss and all nodes to
-    // the left are active roots with zero loss
-    singles?.let {
-        if (singles.node.isActiveRoot())
+        if (currentFix.node.isActiveRoot() && currentFix.rank.activeRoots == null)
             throwIllegalState(
-                "singlesLoss is pointing to node with key: ${singles.node.item} which is an active root.",
+                "Node ${currentFix.node.item} is an active root, but its rank ${currentFix.rank.rankNumber} has its activeRoots pointer set to null",
                 heapRecord)
-        else if (singles.node.isPassive())
+        else if (!currentFix.node.isActiveRoot() && currentFix.rank.loss == null)
             throwIllegalState(
-                "singlesLoss is pointing to node with key: ${singles.node.item} which is passive.",
+                "Node ${currentFix.node.item} is a node with positive loss, but its rank ${currentFix.rank.rankNumber} has its loss pointer set to null",
                 heapRecord)
-        else if (singles.node.loss == null)
+
+        if (currentFix.node.loss == null)
             throwIllegalState(
-                "singlesLoss is pointing to node with key: ${singles.node.item} which has loss set to null.",
-                heapRecord)
-        else if (singles.node.loss == 0u)
-            throwIllegalState(
-                "singlesLoss is pointing to node with key: ${singles.node.item} which has loss set to 0.",
-                heapRecord)
+                "Node ${currentFix.node.item} is on the fix-list with loss set to null", heapRecord)
     }
 
     // check ranks pointers
@@ -181,5 +134,12 @@ fun <T : Comparable<T>> checkFixList(heapRecord: HeapRecord<T>) {
         currRank = currRank.inc
     }
 
-    //    printFixList(heapRecord)
+    if (heapRecord.size > 0) {
+        var childCounter = 0
+        heapRecord.root?.leftChild?.forEach { childCounter++ }
+        val R = 2 * ln(heapRecord.size.toDouble()) + 6
+        if (childCounter > R + 3)
+            throw IllegalStateException(
+                "Too many root children: n is ${heapRecord.size}, deg(root) is $childCounter, R + 3 is ${R + 3}")
+    }
 }

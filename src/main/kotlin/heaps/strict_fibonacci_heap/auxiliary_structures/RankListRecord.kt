@@ -18,12 +18,12 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
         }
     }
 
-    fun removeActiveRootsPointer(xFix: FixListRecord<T>, heapRecord: HeapRecord<T>) {
+    private fun removeActiveRootsPointer(xFix: FixListRecord<T>, heapRecord: HeapRecord<T>) {
         if (activeRoots === xFix) {
             // try to select a new candidate for activeRoots
-            val nextInFix = xFix.right!!
+            val nextInFix = xFix.right
             activeRoots =
-                if (nextInFix !== xFix &&
+                if (nextInFix != null &&
                     nextInFix.node.isActiveRoot() &&
                     nextInFix.rank === xFix.rank) {
                     nextInFix
@@ -40,15 +40,15 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
         }
     }
 
-    fun removeLossPointer(xFix: FixListRecord<T>, heapRecord: HeapRecord<T>) {
+    private fun removeLossPointer(xFix: FixListRecord<T>, heapRecord: HeapRecord<T>) {
         if (loss === xFix) {
             // try to select a new candidate for loss
-            val prevInFix = xFix.left!!
+            val nextInFix = xFix.right
             loss =
-                if (prevInFix !== xFix &&
-                    !prevInFix.node.isActiveRoot() &&
-                    prevInFix.rank === xFix.rank) {
-                    prevInFix
+                if (nextInFix !== null &&
+                    !nextInFix.node.isActiveRoot() &&
+                    nextInFix.rank === xFix.rank) {
+                    nextInFix
                 } else {
                     null
                 }
@@ -63,23 +63,21 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
     fun isLossTransformable(): Boolean {
         if (loss == null) return false
 
-        val firstLoss = loss!!
+        loss?.let {
+            if (it.node.loss!! >= 2u) return true
+            it.right?.let { nextInFix ->
+                return nextInFix.rank === this
+            }
+        }
 
-        if (firstLoss.left == null || firstLoss.right == null) return false
-
-        if (firstLoss.node.loss!! >= 2u) return true
-
-        val secondLoss = loss!!.left!!
-        return secondLoss.rank === loss!!.rank
+        return false
     }
 
     fun isActiveRootTransformable(): Boolean {
         if (activeRoots == null) return false
-        val firstActiveRoot = activeRoots!!
 
-        if (activeRoots!!.left == null || activeRoots!!.right == null) return false
-
-        val nextInFix = firstActiveRoot.right!!
-        return nextInFix.node.isActiveRoot() && nextInFix.rank === this
+        activeRoots?.right?.let { nextInFix ->
+            return nextInFix.rank === this
+        } ?: return false
     }
 }

@@ -55,7 +55,6 @@ fun <T : Comparable<T>> setNewRoot(x: NodeRecord<T>, heapRecord: HeapRecord<T>) 
 
     // if x is active, set it to passive and all active children become active roots
     if (x.isActive()) x.setPassive(heapRecord)
-    checkFixList(heapRecord)
 
     // remove x from the queue
     removeFromQueue(x, heapRecord)
@@ -82,7 +81,6 @@ fun <T : Comparable<T>> setNewRoot(x: NodeRecord<T>, heapRecord: HeapRecord<T>) 
 
     // make all the other children of the root children of x
     linkAllToRoot(previousRoot.leftChild, heapRecord)
-    checkFixList(heapRecord)
 }
 
 fun <T : Comparable<T>> rearrangeRootChildren(heapRecord: HeapRecord<T>) {

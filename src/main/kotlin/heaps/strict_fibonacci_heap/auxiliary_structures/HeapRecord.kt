@@ -12,10 +12,19 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
     var qHead: NodeRecord<T>? = null
     var rankList: RankListRecord<T> = RankListRecord(0)
 
-    var fixList: FixListRecord<T>? = null
+    var fixListPartOne: FixListRecord<T>? = null
         private set
 
-    var singles: FixListRecord<T>? = null
+    var fixListPartTwo: FixListRecord<T>? = null
+        private set
+
+    var fixListPartThree: FixListRecord<T>? = null
+        private set
+
+    var fixListPartFour: FixListRecord<T>? = null
+        private set
+
+    var fixListSize = 0
         private set
 
     init {
@@ -26,84 +35,69 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         }
     }
 
+    private fun getFixListPartHead(fixListPart: FixListPart): FixListRecord<T>? {
+        return when (fixListPart) {
+            FixListPart.PART_ONE -> fixListPartOne
+            FixListPart.PART_TWO -> fixListPartTwo
+            FixListPart.PART_THREE -> fixListPartThree
+            FixListPart.PART_FOUR -> fixListPartFour
+        }
+    }
+
+    private fun setFixListPartHead(xFix: FixListRecord<T>) {
+        when (xFix.fixListPart) {
+            FixListPart.PART_ONE -> fixListPartOne = xFix
+            FixListPart.PART_TWO -> fixListPartTwo = xFix
+            FixListPart.PART_THREE -> fixListPartThree = xFix
+            FixListPart.PART_FOUR -> fixListPartFour = xFix
+            else -> throw IllegalStateException("Node is not on the fix-list, can't set head")
+        }
+    }
+
+    private fun removeFixListPartHead(fixListPart: FixListPart) {
+        when (fixListPart) {
+            FixListPart.PART_ONE -> fixListPartOne = null
+            FixListPart.PART_TWO -> fixListPartTwo = null
+            FixListPart.PART_THREE -> fixListPartThree = null
+            FixListPart.PART_FOUR -> fixListPartFour = null
+        }
+    }
+
     private fun insertIntoEmptyFixList(xFix: FixListRecord<T>) {
-        if (fixList != null) throw IllegalStateException("Fix-list is not empty")
+        if (fixListSize > 0) throw IllegalStateException("Fix-list is not empty")
 
         logger.debug { "Inserting ${xFix.node.item} into the empty fix-list" }
 
-        fixList = xFix
-        xFix.left = xFix
-        xFix.right = xFix
+        fixListSize = 1
         if (xFix.node.loss!! > 0u) {
-            singles = xFix
+            fixListPartThree = xFix
+            xFix.fixListPart = FixListPart.PART_THREE
             xFix.rank.setLossPointer(xFix)
         } else {
+            fixListPartTwo = xFix
+            xFix.fixListPart = FixListPart.PART_TWO
             xFix.rank.setActiveRootsPointer(xFix)
         }
     }
 
     private fun fixListInsertIntoPartOne(xFix: FixListRecord<T>) {
         logger.debug { "Inserting ${xFix.node.item} into part one of the fix-list" }
-        if (fixList == null) insertIntoEmptyFixList(xFix) else fixListInsertHead(xFix)
+        fixListInsertHead(xFix, FixListPart.PART_ONE)
     }
 
     private fun fixListInsertIntoPartTwo(xFix: FixListRecord<T>) {
         logger.debug { "Inserting ${xFix.node.item} into part two of the fix-list" }
-
-        if (fixList == null) {
-            insertIntoEmptyFixList(xFix)
-            return
-        }
-
-        if (singles != null) {
-            fixListInsertLeftOf(xFix, singles!!)
-        } else {
-            if (fixList!!.node.loss == 0u) {
-                fixListInsertTail(xFix)
-            } else {
-                // maybe bad
-                var currentFix = fixList!!
-                var started = false
-                while (currentFix.left!!.node.loss != 0u && (!started || currentFix !== fixList)) {
-                    currentFix = currentFix.left!!
-                    started = true
-                }
-                fixListInsertLeftOf(xFix, currentFix)
-            }
-        }
+        fixListInsertHead(xFix, FixListPart.PART_TWO)
     }
 
     private fun fixListInsertIntoPartThree(xFix: FixListRecord<T>) {
         logger.debug { "Inserting ${xFix.node.item} into part three of the fix-list" }
-
-        if (fixList == null) {
-            insertIntoEmptyFixList(xFix)
-            return
-        }
-
-        if (singles != null) {
-            fixListInsertRightOf(xFix, singles!!)
-        } else {
-            if (fixList!!.node.loss == 0u) {
-                fixListInsertTail(xFix)
-            } else {
-                singles = xFix
-                // maybe bad
-                var currentFix = fixList!!
-                var started = false
-                while (currentFix.left!!.node.loss != 0u && (!started || currentFix !== fixList)) {
-                    currentFix = currentFix.left!!
-                    started = true
-                }
-                fixListInsertLeftOf(xFix, currentFix)
-            }
-        }
+        fixListInsertHead(xFix, FixListPart.PART_THREE)
     }
 
     private fun fixListInsertIntoPartFour(xFix: FixListRecord<T>) {
         logger.debug { "Inserting ${xFix.node.item} into part four of the fix-list" }
-
-        if (fixList == null) insertIntoEmptyFixList(xFix) else fixListInsertTail(xFix)
+        fixListInsertHead(xFix, FixListPart.PART_FOUR)
     }
 
     fun insertIntoFixList(x: NodeRecord<T>) {
@@ -116,7 +110,7 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         val xFix = FixListRecord(x, xRank)
         x.rank = xFix
 
-        if (fixList == null) {
+        if (fixListSize == 0) {
             insertIntoEmptyFixList(xFix)
             return
         }
@@ -133,14 +127,17 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
                     xRank.setActiveRootsPointer(xFix)
                     fixListInsertIntoPartTwo(xFix)
                 } else {
-                    val nextInFix = rankActiveRoots.right!!
-                    if (nextInFix.node.loss == 0u && nextInFix.rank === xRank) {
+                    val nextInFix = rankActiveRoots.right
+                    if (nextInFix != null &&
+                        nextInFix.node.loss == 0u &&
+                        nextInFix.rank === xRank) {
                         fixListInsertRightOf(xFix, rankActiveRoots)
                     } else {
                         fixListRemove(rankActiveRoots, false)
                         fixListInsertIntoPartOne(rankActiveRoots)
                         fixListInsertRightOf(xFix, rankActiveRoots)
                     }
+                    xFix.fixListPart = FixListPart.PART_ONE
                 }
             }
 
@@ -150,17 +147,22 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
                     xRank.setLossPointer(xFix)
                     fixListInsertIntoPartThree(xFix)
                 } else {
-                    val prevInFix = rankLoss.left!!
-                    if (prevInFix.node.loss!! > 0u && prevInFix.rank === xRank) {
-                        fixListInsertLeftOf(xFix, rankLoss)
+                    val nextInFix = rankLoss.right
+                    if (nextInFix != null &&
+                        nextInFix.node.loss!! > 0u &&
+                        nextInFix.rank === xRank) {
+                        fixListInsertRightOf(xFix, rankLoss)
                     } else {
                         fixListRemove(rankLoss, false)
                         fixListInsertIntoPartFour(rankLoss)
-                        fixListInsertLeftOf(xFix, rankLoss)
+                        fixListInsertRightOf(xFix, rankLoss)
                     }
+                    xFix.fixListPart = FixListPart.PART_FOUR
                 }
             }
         }
+
+        fixListSize++
     }
 
     private fun fixListInsertBetween(
@@ -168,7 +170,7 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         left: FixListRecord<T>,
         right: FixListRecord<T>
     ) {
-        if (left === right) throw IllegalArgumentException("a and b need to be distinct")
+        if (left === right) throw IllegalArgumentException("Left and right need to be distinct")
 
         // paste x between new boundaries
         xFix.left = left
@@ -180,63 +182,28 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
     private fun fixListInsertRightOf(xFix: FixListRecord<T>, yFix: FixListRecord<T>) {
         if (yFix.right === xFix) return
 
-        val nextInFix = yFix.right!!
+        val nextInFix = yFix.right
 
-        if (yFix === nextInFix) {
+        if (nextInFix == null) {
             // there is only one item on the fix-list
-            fixListInsertTail(xFix)
+            yFix.right = xFix
+            xFix.left = yFix
         } else {
             fixListInsertBetween(xFix = xFix, left = yFix, right = nextInFix)
         }
     }
 
-    private fun fixListInsertLeftOf(xFix: FixListRecord<T>, yFix: FixListRecord<T>) {
-        if (yFix.left === xFix) return
+    private fun fixListInsertHead(xFix: FixListRecord<T>, fixListPart: FixListPart) {
+        if (xFix.fixListPart === fixListPart)
+            throw IllegalArgumentException(
+                "Trying to insert node ${xFix.node.item} into the fix-list but it's already there")
+        xFix.fixListPart = fixListPart
 
-        val prevInFix = yFix.left!!
-
-        if (yFix === prevInFix) {
-            // there is only one item on the fix-list
-            fixListInsertHead(xFix)
-        } else {
-            fixListInsertBetween(xFix = xFix, left = prevInFix, right = yFix)
-        }
-    }
-
-    private fun fixListInsertHead(xFix: FixListRecord<T>) {
-        // check if fix-list is empty
-        if (this.fixList == null) {
-            insertIntoEmptyFixList(xFix)
-            return
-        }
-
-        val firstInFix = this.fixList!!.right
-
-        // check if xFix is already at the head of the fix-list
-        if (firstInFix === xFix) return
-
-        val lastInFix = this.fixList!!
-
-        if (firstInFix === lastInFix) {
-            // there is only one item left on the fix-list
-            xFix.left = lastInFix
-            xFix.right = lastInFix
-            lastInFix.left = xFix
-            lastInFix.right = xFix
-        } else {
-            fixListInsertBetween(xFix = xFix, left = lastInFix, right = firstInFix!!)
-        }
-    }
-
-    private fun fixListInsertTail(xFix: FixListRecord<T>) {
-        // check if xFix is already at the tail of the fix-list
-        if (this.fixList === xFix) return
-
-        // move xFix to the head of the list
-        fixListInsertHead(xFix)
-
-        // move the tail pointer to the head
-        this.fixList = xFix
+        getFixListPartHead(fixListPart)?.let { firstInFix ->
+            xFix.right = firstInFix
+            firstInFix.left = xFix
+            setFixListPartHead(xFix)
+        } ?: run { setFixListPartHead(xFix) }
     }
 
     fun fixListRemove(xFix: FixListRecord<T>, resetRankPointers: Boolean) {
@@ -246,50 +213,64 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
             xFix.node.rank = xFix.node.getRank()
         }
 
-        // check if singles needs updating
-        if (singles === xFix) {
-            val nextInFix = xFix.right!!
-            singles = if (nextInFix !== xFix && nextInFix.node.loss != 0u) nextInFix else null
-        }
+        val prev = xFix.left
+        val next = xFix.right
 
-        val prev = xFix.left!!
-        val next = xFix.right!!
+        when {
+            prev == null && next == null -> {
+                removeFixListPartHead(xFix.fixListPart!!)
+            }
 
-        if (xFix === next) {
-            // xFix is the last item on the fix-list
-            fixList = null
-        } else if (prev === next) {
-            // there are only two items left on the fix-list
-            fixList = prev
-            prev.right = prev
-            prev.left = prev
-        } else {
-            // there are more than two items on the fix-list
-            prev.right = next
-            next.left = prev
-            if (fixList === xFix) fixList = prev
+            prev == null && next != null -> {
+                setFixListPartHead(next)
+                next.left = null
+            }
+
+            prev != null && next == null -> {
+                prev.right = null
+            }
+
+            prev != null && next != null -> {
+                prev.right = next
+                next.left = prev
+            }
         }
 
         xFix.left = null
         xFix.right = null
+        xFix.fixListPart = null
 
         if (resetRankPointers) {
+            fixListSize--
             if (xFix.node.loss == 0u) {
                 // if xFix was an active root, check if activeRoots needs moving
                 xFix.rank.activeRoots?.let { activeRoots ->
-                    val nextInFix = activeRoots.right!!
-                    if (nextInFix.node.loss != 0u || nextInFix.rank !== xFix.rank) {
+                    val nextInFix = activeRoots.right
+                    if (nextInFix == null || nextInFix.rank !== xFix.rank) {
                         fixListRemove(activeRoots, false)
                         fixListInsertIntoPartTwo(activeRoots)
                     }
                 }
             } else {
                 xFix.rank.loss?.let { loss ->
-                    val prevInFix = loss.left!!
-                    if (prevInFix.node.loss == 0u || prevInFix.rank !== xFix.rank) {
+                    val nextInFix = loss.right
+                    if (nextInFix == null || nextInFix.rank !== xFix.rank) {
                         fixListRemove(loss, false)
                         fixListInsertIntoPartThree(loss)
                     }
+                }
+            }
+        }
+    }
+
+    fun fixListForEach(action: (FixListRecord<T>) -> Unit) {
+        for (currentFixPartEnum in FixListPart.values()) {
+            val currentFixPart = getFixListPartHead(currentFixPartEnum)
+            var currentFix = currentFixPart
+            currentFixPart?.let {
+                while (currentFix != null) {
+                    action(currentFix!!)
+                    currentFix = currentFix!!.right
                 }
             }
         }

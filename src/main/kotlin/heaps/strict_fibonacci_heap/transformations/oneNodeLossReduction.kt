@@ -20,12 +20,9 @@ fun <T : Comparable<T>> oneNodeLossReduction(x: NodeRecord<T>, heapRecord: HeapR
 }
 
 fun <T : Comparable<T>> canPerformOneNodeLossReduction(heapRecord: HeapRecord<T>): Boolean {
-    heapRecord.fixList?.let { lastInFix ->
-        return lastInFix.node.loss!! >= 2u
-    }
-    return false
+    return heapRecord.fixListPartFour != null && heapRecord.fixListPartFour!!.node.loss!! >= 2u
 }
 
 fun <T : Comparable<T>> performOneNodeLossReduction(heapRecord: HeapRecord<T>) {
-    oneNodeLossReduction(heapRecord.fixList!!.node, heapRecord)
+    oneNodeLossReduction(heapRecord.fixListPartFour!!.node, heapRecord)
 }
