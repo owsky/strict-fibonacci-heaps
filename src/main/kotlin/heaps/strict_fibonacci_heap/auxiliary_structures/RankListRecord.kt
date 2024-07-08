@@ -18,7 +18,7 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
         }
     }
 
-    private fun removeActiveRootsPointer(xFix: FixListRecord<T>, heapRecord: HeapRecord<T>) {
+    private fun removeActiveRootsPointer(xFix: FixListRecord<T>) {
         if (activeRoots === xFix) {
             // try to select a new candidate for activeRoots
             val nextInFix = xFix.right
@@ -40,7 +40,7 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
         }
     }
 
-    private fun removeLossPointer(xFix: FixListRecord<T>, heapRecord: HeapRecord<T>) {
+    private fun removeLossPointer(xFix: FixListRecord<T>) {
         if (loss === xFix) {
             // try to select a new candidate for loss
             val nextInFix = xFix.right
@@ -56,8 +56,8 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
     }
 
     fun removeFixListPointers(xFix: FixListRecord<T>, heapRecord: HeapRecord<T>) {
-        removeActiveRootsPointer(xFix, heapRecord)
-        removeLossPointer(xFix, heapRecord)
+        removeActiveRootsPointer(xFix)
+        removeLossPointer(xFix)
     }
 
     fun isLossTransformable(): Boolean {

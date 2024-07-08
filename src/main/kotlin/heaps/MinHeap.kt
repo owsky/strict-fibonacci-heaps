@@ -1,6 +1,6 @@
 package heaps
 
-abstract class MinHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) {
+abstract class MinHeap<T : Comparable<T>> {
     // Insert an item not currently in the heap
     abstract fun insert(item: T)
 

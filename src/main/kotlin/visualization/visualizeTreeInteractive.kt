@@ -1,5 +1,6 @@
 package visualization
 
+import graph.Node
 import heaps.strict_fibonacci_heap.StrictFibonacciHeap
 import heaps.strict_fibonacci_heap.utils.printDebug
 import java.awt.BorderLayout
@@ -18,7 +19,7 @@ import org.graphstream.ui.swing_viewer.SwingViewer
 import org.graphstream.ui.swing_viewer.ViewPanel
 import org.graphstream.ui.view.Viewer
 
-fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
+fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Node>, nodesToAdd: List<Node>) {
     val latch = CountDownLatch(1)
 
     SwingUtilities.invokeLater {
@@ -85,13 +86,12 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
         val printFixListButton = JButton("Print Fix-List")
 
         addNodeButton.addActionListener {
-            if (heap.getSize() < nums.size) {
-                heap.insert(nums[heap.getSize()])
+            if (heap.getSize() < nodesToAdd.size) {
+                heap.insert(nodesToAdd[heap.getSize()])
                 updateLayout()
                 addNodeButton.text =
-                    if (heap.getSize() < nums.size) "Add Node (${nums[heap.getSize()]})"
-                    else "No More Nodes"
-                addNodeButton.isEnabled = heap.getSize() < nums.size
+                    if (heap.getSize() < nodesToAdd.size) "Add Node" else "No More Nodes"
+                addNodeButton.isEnabled = heap.getSize() < nodesToAdd.size
             }
         }
 
@@ -130,10 +130,8 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Int>, nums: List<Int>) {
             })
 
         // Set initial text for add node button
-        addNodeButton.text =
-            if (heap.getSize() < nums.size) "Add Node (${nums[heap.getSize()]})"
-            else "No Nodes to Add"
-        addNodeButton.isEnabled = nums.isNotEmpty()
+        addNodeButton.text = if (heap.getSize() < nodesToAdd.size) "Add Node" else "No Nodes to Add"
+        addNodeButton.isEnabled = nodesToAdd.isNotEmpty()
 
         dialog.isVisible = true
     }

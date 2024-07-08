@@ -70,7 +70,3 @@ fun <T : Comparable<T>> removeFromQueue(x: NodeRecord<T>, heapRecord: HeapRecord
     x.qNext = null
     x.qPrev = null
 }
-
-fun <T : Comparable<T>> moveToBackOfQueue(x: NodeRecord<T>, heapRecord: HeapRecord<T>) {
-    heapRecord.qHead = x.qNext
-}

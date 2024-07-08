@@ -34,8 +34,10 @@ class CustomMouseManager : DefaultMouseManager() {
     private fun showPopup(e: MouseEvent, node: Node, rank: Int) {
         popup.removeAll()
         val isActiveRoot = node.getAttribute("ui.activeRoot")
+        val hasLoss = node.getAttribute("ui.loss")
         var text = "Rank: $rank"
-        if (isActiveRoot != null) text = "Active Root $text"
+        if (isActiveRoot != null) text = "Active Root, $text"
+        if (hasLoss != null) text = "$text, Loss $hasLoss"
         popup.add(JLabel(text))
 
         // Display the popup

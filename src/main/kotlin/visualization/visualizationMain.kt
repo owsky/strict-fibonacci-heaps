@@ -1,14 +1,15 @@
-import benchmark.benchmark
+package visualization
+
+// import heaps.strict_fibonacci_heap.StrictFibonacciHeap
+// import utils.generateIDs
 
 const val visualize = false
 const val interactive = true
 const val shortcut = true
 
 fun main() {
-    println(KotlinVersion.CURRENT)
-    benchmark(1234L)
 
-    //    val nums = generateIntegers(100000, 0..10000000)
+    //    val nums = generateIDs(100000, 0..10000000, seed = 1234L).toList()
     //
     //    val h: StrictFibonacciHeap<Int>
     //    if (visualize) {
@@ -26,8 +27,7 @@ fun main() {
     //        h = StrictFibonacciHeap(nums)
     //    }
     //
-    //    val extracted = ArrayList<Int>()
-    //    for (i in nums.indices) extracted.add(h.extractMin())
+    //    val extracted = nums.map { h.extractMin() }
     //
     //    val sortedNums = nums.sorted()
     //    if (sortedNums != extracted)

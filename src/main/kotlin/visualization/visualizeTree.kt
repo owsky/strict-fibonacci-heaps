@@ -1,5 +1,6 @@
 package visualization
 
+import graph.Node
 import heaps.strict_fibonacci_heap.StrictFibonacciHeap
 import java.awt.Dimension
 import javax.swing.JFrame
@@ -9,7 +10,7 @@ import org.graphstream.ui.swing_viewer.SwingViewer
 import org.graphstream.ui.swing_viewer.ViewPanel
 import org.graphstream.ui.view.Viewer
 
-fun visualizeTree(heap: StrictFibonacciHeap<Int>) {
+fun visualizeTree(heap: StrictFibonacciHeap<Node>) {
     System.setProperty("org.graphstream.ui", "swing")
     val graph = SingleGraph("MyGraph")
     graph.setAttribute("ui.antialias")

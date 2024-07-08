@@ -24,8 +24,7 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
     var fixListPartFour: FixListRecord<T>? = null
         private set
 
-    var fixListSize = 0
-        private set
+    private var fixListSize = 0
 
     init {
         root?.let {
@@ -264,7 +263,7 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
     }
 
     fun fixListForEach(action: (FixListRecord<T>) -> Unit) {
-        for (currentFixPartEnum in FixListPart.values()) {
+        for (currentFixPartEnum in FixListPart.entries) {
             val currentFixPart = getFixListPartHead(currentFixPartEnum)
             var currentFix = currentFixPart
             currentFixPart?.let {

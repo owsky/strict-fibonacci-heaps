@@ -9,8 +9,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
-class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) :
-    MinHeap<T>(items) {
+class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) : MinHeap<T>() {
     var heapRecord = HeapRecord<T>()
     private val lookup: MutableMap<T, NodeRecord<T>> = mutableMapOf()
 
@@ -90,6 +89,9 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         if (heapRecord.root!!.leftChild == null) {
             // if the root is the only element
             heapRecord.root = null
+            if (heapRecord.size != 0)
+                throw IllegalStateException(
+                    "The root is now null but the heap still contains ${heapRecord.size} elements")
             return
         }
 
@@ -103,7 +105,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         // of y to x, if they are passive
         repeat(2) {
             heapRecord.qHead?.let { y ->
-                moveToBackOfQueue(y, heapRecord)
+                heapRecord.qHead = y.qNext
                 y.leftChild?.let {
                     val fstLastChild = it.left!!
                     val sndLastChild = fstLastChild.left!!
@@ -118,16 +120,27 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         }
 
         // do a loss reduction if possible
-        if (canPerformTwoNodesLossReduction(heapRecord)) performTwoNodesLossReduction(heapRecord)
-        else if (canPerformOneNodeLossReduction(heapRecord)) performOneNodeLossReduction(heapRecord)
+        if (canPerformTwoNodesLossReduction(heapRecord)) {
+            //
+            performTwoNodesLossReduction(heapRecord)
+        } else if (canPerformOneNodeLossReduction(heapRecord)) {
+            //
+            performOneNodeLossReduction(heapRecord)
+        }
 
         // do active root reductions and root degree reductions in any order until none of either is
         // possible
         while (canPerformActiveRootReduction(heapRecord) ||
             canPerformRootDegreeReduction(heapRecord)) {
-            if (canPerformActiveRootReduction(heapRecord)) performActiveRootReduction(heapRecord)
+            if (canPerformActiveRootReduction(heapRecord)) {
+                //
+                performActiveRootReduction(heapRecord)
+            }
 
-            if (canPerformRootDegreeReduction(heapRecord)) performRootDegreeReduction(heapRecord)
+            if (canPerformRootDegreeReduction(heapRecord)) {
+                //
+                performRootDegreeReduction(heapRecord)
+            }
         }
     }
 
@@ -142,62 +155,40 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
     }
 
     override fun decreaseKey(key: T, smallerKey: T) {
-        //        val x = lookup[key] ?: throw NoSuchElementException("Key not found")
-        //        x.item = smallerKey
-        //        val root = heapRecord.root!!
-        //        if (root === x) {
-        //            return
-        //        } else if (smallerKey < root.item) {
-        //            val tmp = root.item
-        //            root.item = smallerKey
-        //            x.item = tmp
-        //            val y = x.parent!!
-        //
-        //            val wasXActive = x.isActive()
-        //            val wasXActiveRoot = x.isActiveRoot()
-        //
-        //            link(x, root, heapRecord)
-        //
-        //            if (wasXActive && !wasXActiveRoot) {
-        //                // x becomes an active root
-        //                x.setLoss(0u, heapRecord)
-        //                moveToActiveRoots(x, heapRecord)
-        //                // decrease rank of y by one
-        //                y.decreaseRank(heapRecord)
-        //            }
-        //
-        //            // do a loss reduction if possible
-        //            val lastInFix = heapRecord.fixList!!
-        //            val sndLastInFix = lastInFix.left!!
-        //            if (lastInFix.node.isActive() &&
-        //                !lastInFix.node.isActiveRoot() &&
-        //                lastInFix.node.loss!! >= 2u)
-        //                oneNodeLossReduction(lastInFix.node, heapRecord)
-        //            else if (lastInFix.node.isActive() &&
-        //                !lastInFix.node.isActiveRoot() &&
-        //                sndLastInFix.node.isActive() &&
-        //                !sndLastInFix.node.isActiveRoot() &&
-        //                lastInFix.node.loss!! == 1u &&
-        //                sndLastInFix.node.loss!! == 1u)
-        //                twoNodesLossReduction(lastInFix.node, sndLastInFix.node, heapRecord)
-        //
-        //            // do six active root reductions and four root degree reductions in any order
-        //            var activeRootReductionsCounter = 0
-        //            var rootDegreeReductionsCounter = 0
-        //            while (activeRootReductionsCounter < 6 && rootDegreeReductionsCounter < 4) {
-        //                // check if active root reduction is possible
-        //                if (canPerformActiveRootReduction(heapRecord)) {
-        //                    performActiveRootReduction(heapRecord)
-        //                    ++activeRootReductionsCounter
-        //                }
-        //
-        //                // check if root degree reduction is possible
-        //                if (canPerformRootDegreeReduction(heapRecord)) {
-        //                    performRootDegreeReduction(heapRecord)
-        //                    ++rootDegreeReductionsCounter
-        //                }
-        //            }
-        //        }
+        val x = lookup[key] ?: throw NoSuchElementException("Key not found")
+        x.item = smallerKey
+
+        val root = heapRecord.root!!
+        if (root === x) {
+            return
+        } else if (x.item < root.item) {
+            root.item = x.item.also { x.item = root.item }
+            lookup[root.item] = root
+            lookup[x.item] = x
+        }
+
+        link(x, root, heapRecord)
+
+        // do a loss reduction if possible
+        if (canPerformTwoNodesLossReduction(heapRecord)) performTwoNodesLossReduction(heapRecord)
+        else if (canPerformOneNodeLossReduction(heapRecord)) performOneNodeLossReduction(heapRecord)
+
+        // do up to six active root reductions and up to four root degree reductions
+        var activeRootReductionsCounter = 0
+        var rootDegreeReductionsCounter = 0
+        while ((activeRootReductionsCounter < 6 && canPerformActiveRootReduction(heapRecord)) ||
+            (rootDegreeReductionsCounter < 4 && canPerformRootDegreeReduction(heapRecord))) {
+
+            if (canPerformActiveRootReduction(heapRecord)) {
+                performActiveRootReduction(heapRecord)
+                activeRootReductionsCounter++
+            }
+
+            if (canPerformRootDegreeReduction(heapRecord)) {
+                performRootDegreeReduction(heapRecord)
+                rootDegreeReductionsCounter++
+            }
+        }
     }
 
     override fun getSize(): Int {

@@ -5,7 +5,6 @@ import graph.Node
 import heaps.HeapKind
 import heaps.MinHeap
 import heaps.binary_heap.BinaryHeap
-import heaps.fibonacci_heap.FibonacciHeap
 import heaps.strict_fibonacci_heap.StrictFibonacciHeap
 
 fun prim(graph: Graph, s: Node, heapKind: HeapKind) {
@@ -15,9 +14,6 @@ fun prim(graph: Graph, s: Node, heapKind: HeapKind) {
         when (heapKind) {
             HeapKind.BINARY_HEAP -> {
                 BinaryHeap(nodes)
-            }
-            HeapKind.FIBONACCI_HEAP -> {
-                FibonacciHeap(nodes)
             }
             HeapKind.STRICT_FIBONACCI_HEAP -> {
                 StrictFibonacciHeap(nodes)

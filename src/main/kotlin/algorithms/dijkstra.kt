@@ -5,7 +5,6 @@ import graph.Node
 import heaps.HeapKind
 import heaps.MinHeap
 import heaps.binary_heap.BinaryHeap
-import heaps.fibonacci_heap.FibonacciHeap
 import heaps.strict_fibonacci_heap.StrictFibonacciHeap
 
 fun dijkstra(graph: Graph, s: Node, heapKind: HeapKind) {
@@ -16,9 +15,6 @@ fun dijkstra(graph: Graph, s: Node, heapKind: HeapKind) {
         when (heapKind) {
             HeapKind.BINARY_HEAP -> {
                 BinaryHeap(nodes)
-            }
-            HeapKind.FIBONACCI_HEAP -> {
-                FibonacciHeap(nodes)
             }
             HeapKind.STRICT_FIBONACCI_HEAP -> {
                 StrictFibonacciHeap(nodes)
@@ -32,7 +28,7 @@ fun dijkstra(graph: Graph, s: Node, heapKind: HeapKind) {
         for ((y, edgeWeight) in graph.getAdjacencyList(wMin)) {
             if (!x.contains(y)) {
                 val relaxed = wMin.key + edgeWeight
-                if (y.key > relaxed) {
+                if (relaxed < y.key) {
                     val ySmaller = Node(y.id)
                     ySmaller.key = relaxed
                     heap.decreaseKey(y, ySmaller)

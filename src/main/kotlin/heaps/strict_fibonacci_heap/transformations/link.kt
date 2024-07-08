@@ -8,14 +8,35 @@ import heaps.strict_fibonacci_heap.utils.removeFromCircularList
 fun <T : Comparable<T>> link(x: NodeRecord<T>, y: NodeRecord<T>, heapRecord: HeapRecord<T>) {
     val previousParent = x.parent
     val xIsActiveRoot = x.isActiveRoot()
+    if (x.parent === y) return
+
     x.parent = y
 
     // if previous parent's left child is x, update its left child pointer
+    //    previousParent?.let {
+    //        if (it.leftChild === x) {
+    //            if (y.parent === x) {
+    //                previousParent.leftChild = y
+    //                x.leftChild?.let { xLeftChild ->
+    //                    x.leftChild = if (xLeftChild.right !== xLeftChild) xLeftChild.right else
+    // null
+    //                }
+    //            } else {
+    //                val nextChild = it.leftChild!!.right
+    //                previousParent.leftChild = if (nextChild === x) null else nextChild
+    //            }
+    //        }
+    //    }
+
     previousParent?.let {
         if (it.leftChild === x) {
             val nextChild = it.leftChild!!.right
             previousParent.leftChild = if (nextChild === x) null else nextChild
         }
+    }
+
+    if (y.parent === x) {
+        link(y, previousParent!!, heapRecord)
     }
 
     // check if nonLinkableChild needs updating

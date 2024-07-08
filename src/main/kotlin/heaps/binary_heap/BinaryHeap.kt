@@ -3,7 +3,7 @@ package heaps.binary_heap
 import heaps.MinHeap
 import java.util.*
 
-class BinaryHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) : MinHeap<T>(items) {
+class BinaryHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) : MinHeap<T>() {
     private val lookup: MutableMap<T, Int> = HashMap()
     private val data: MutableList<T> = ArrayList()
 
