@@ -37,18 +37,6 @@ class Graph {
         return nodes
     }
 
-    fun copy(root: Node): Pair<Graph, Node> {
-        val newGraph = Graph()
-        val nodes = getNodes()
-        for (u in nodes) {
-            val adj = getAdjacencyList(u)
-            for ((v, w) in adj) {
-                newGraph.addEdge(Edge(u.copy(), v.copy(), w))
-            }
-        }
-        return newGraph to root.copy()
-    }
-
     companion object {
         private fun generateWeight(random: Random) = floor(random.nextDouble(1.0, 100.0))
 
