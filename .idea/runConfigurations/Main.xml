@@ -3,7 +3,7 @@
     <option name="MAIN_CLASS_NAME" value="MainKt" />
     <module name="strict-fibonacci-heaps" />
     <shortenClasspath name="NONE" />
-    <option name="VM_PARAMETERS" value="-Dsun.java2d.opengl=True" />
+    <option name="VM_PARAMETERS" value="-Dsun.java2d.opengl=True -Xmx15360m" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
