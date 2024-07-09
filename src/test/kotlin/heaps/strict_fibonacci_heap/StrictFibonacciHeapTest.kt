@@ -19,18 +19,12 @@ class StrictFibonacciHeapTest :
                             (1..100).map {
                                 launch(Dispatchers.Default) {
                                     val nums = generateIDs(100000, 0..10000000, 1234L)
-                                    try {
-                                        val h = StrictFibonacciHeap(nums)
-                                        val extracted = ArrayList<Int>()
-                                        for (i in nums.indices) extracted.add(h.extractMin())
+                                    val h = StrictFibonacciHeap(nums)
+                                    val extracted = ArrayList<Int>()
+                                    for (i in nums.indices) extracted.add(h.extractMin())
 
-                                        val sortedNums = nums.sorted()
-                                        sortedNums shouldBe extracted
-                                    } catch (e: IllegalArgumentException) {
-                                        println(e.message)
-                                        println(nums)
-                                        throw e
-                                    }
+                                    val sortedNums = nums.sorted()
+                                    sortedNums shouldBe extracted
                                 }
                             }
 

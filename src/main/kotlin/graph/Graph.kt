@@ -3,7 +3,6 @@ package graph
 import java.util.AbstractMap.SimpleEntry
 import kotlin.math.floor
 import kotlin.random.Random
-import utils.generateIDs
 
 class Graph {
     private var data: MutableMap<Node, MutableSet<Map.Entry<Node, Double>>> = HashMap()
@@ -11,6 +10,7 @@ class Graph {
     fun addEdge(e: Edge) {
         val (u, v, weight) = e
         data.computeIfAbsent(u) { HashSet() }.add(SimpleEntry(v, weight))
+        data.computeIfAbsent(v) { HashSet() }
     }
 
     fun getAdjacencyList(u: Node?): Set<Map.Entry<Node, Double>> {
@@ -38,23 +38,13 @@ class Graph {
     }
 
     companion object {
-        private fun generateEdges(
+        private fun generateWeight(random: Random) = floor(random.nextDouble(1.0, 100.0))
+
+        private fun generateSpanningTree(
             nodes: List<Node>,
-            p: Double,
-            directed: Boolean,
-            seed: Long
-        ): List<Edge> {
-            val n = nodes.size
-            val totalEdges = n.toLong() * (n.toLong() - 1) / 2
-            val m = floor(totalEdges.toDouble() * p)
-            require(m <= totalEdges)
-            require(p in 0.1..1.0) { "p must be within the range 0.1 to 1.0" }
-
-            if (n < 2) return emptyList() // No edges possible if fewer than 2 nodes
-
-            val random = Random(seed)
-
-            // Generate a spanning tree using a simple algorithm (e.g., Prim's or Kruskal's)
+            random: Random,
+            directed: Boolean
+        ): MutableList<Edge> {
             val spanningTreeEdges = mutableListOf<Edge>()
             val connectedNodes = mutableSetOf(nodes.first())
             val remainingNodes = nodes.toMutableSet().apply { remove(nodes.first()) }
@@ -63,52 +53,49 @@ class Graph {
                 val node1 = connectedNodes.random(random)
                 val node2 = remainingNodes.random(random)
 
-                val weight = random.nextDouble(1.0, 100.0)
+                val weight = generateWeight(random)
                 spanningTreeEdges.add(Edge(node1, node2, weight))
+                if (directed) spanningTreeEdges.add(Edge(node2, node1, weight))
 
                 connectedNodes.add(node2)
                 remainingNodes.remove(node2)
             }
 
-            // Generate all other possible edges
-            val allEdges = mutableListOf<Pair<Node, Node>>()
-            for (i in 0..<n) {
-                for (j in i + 1..<n) {
-                    if (directed) {
-                        if (!spanningTreeEdges.any {
-                            (it.u == nodes[i] && it.v == nodes[j]) ||
-                                (it.u == nodes[j] && it.v == nodes[i])
-                        }) {
-                            allEdges.add(Pair(nodes[i], nodes[j]))
-                        }
-                    } else {
-                        if (!spanningTreeEdges.any { it.u == nodes[i] && it.v == nodes[j] }) {
-                            allEdges.add(Pair(nodes[i], nodes[j]))
-                        }
-                        if (!spanningTreeEdges.any { it.u == nodes[j] && it.v == nodes[i] }) {
-                            allEdges.add(Pair(nodes[j], nodes[i]))
-                        }
-                    }
-                }
+            return spanningTreeEdges
+        }
+
+        private fun generateEdges(
+            nodes: List<Node>,
+            p: Double,
+            directed: Boolean,
+            seed: Long
+        ): List<Edge> {
+            val n = nodes.size.toLong()
+            val mCompleteGraph = n * (n - 1) / 2
+            val m = floor(mCompleteGraph.toDouble() * p)
+            require(m >= n - 1) { "m needs to be >= n - 1 to ensure connectivity" }
+            require(p in 0.1..1.0) { "p must be within the range 0.1 to 1.0" }
+
+            if (n < 2) return emptyList()
+
+            val random = Random(seed)
+
+            // generate a random spanning tree with the given nodes
+            val spanningTreeEdges = generateSpanningTree(nodes, random, directed)
+
+            // add random edges until m is reached
+            while (spanningTreeEdges.size < m) {
+                val u = nodes.random(random)
+                val v = nodes.random(random)
+
+                spanningTreeEdges.add(Edge(u, v, generateWeight(random)))
             }
 
-            val edgesToGenerate = if (directed) m else m / 2
-            val additionalEdgesToGenerate = edgesToGenerate - spanningTreeEdges.size
-
-            // Shuffle and take the required number of additional edges
-            if (additionalEdgesToGenerate > 0) {
-                allEdges.shuffle(random)
-                val additionalEdges =
-                    allEdges.take(additionalEdgesToGenerate.toInt()).map { (node1, node2) ->
-                        Edge(node1, node2, random.nextDouble(1.0, 100.0))
-                    }
-                return spanningTreeEdges + additionalEdges
-            }
             return spanningTreeEdges
         }
 
         fun createGraph(n: Int, p: Double, directed: Boolean, seed: Long): Pair<Graph, Node> {
-            val nums = generateIDs(count = n, range = 0..Int.MAX_VALUE, seed = seed)
+            val nums = (1..n).toList()
             val nodes = nums.map { Node(it) }
             val edges = generateEdges(nodes, p, directed, seed)
             val graph = Graph()

@@ -23,11 +23,11 @@ fun <T : Comparable<T>> printRankList(heapRecord: HeapRecord<T>) {
         currRank = currRank.inc
     }
 
-    logger.debug { text }
+    logger.info { text }
 }
 
 fun <T : Comparable<T>> throwIllegalState(msg: String, heapRecord: HeapRecord<T>) {
-    logger.debug { "Illegal state detected. Current status:" }
+    logger.error { "Illegal state detected. Current status:" }
     printFixList(heapRecord)
     printRankList(heapRecord)
     throw IllegalStateException(msg)
@@ -65,7 +65,7 @@ fun <T : Comparable<T>> printFixList(heapRecord: HeapRecord<T>) {
         text += formatFixNode(currentFix)
     }
 
-    logger.debug { text }
+    logger.info { text }
 }
 
 fun <T : Comparable<T>> checkFixList(heapRecord: HeapRecord<T>) {

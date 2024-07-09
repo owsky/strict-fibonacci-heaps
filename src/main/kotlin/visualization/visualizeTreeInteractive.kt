@@ -92,14 +92,14 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Node>, nodesToAdd: List<N
                 addNodeButton.text =
                     if (heap.getSize() < nodesToAdd.size) "Add Node" else "No More Nodes"
                 addNodeButton.isEnabled = heap.getSize() < nodesToAdd.size
+                deleteMinButton.isEnabled = heap.getSize() == nodesToAdd.size
             }
         }
 
         deleteMinButton.addActionListener {
-            if (heap.getSize() > 0) {
-                heap.extractMin()
-                updateLayout()
-            }
+            heap.extractMin()
+            updateLayout()
+            deleteMinButton.isEnabled = heap.getSize() > 0
         }
 
         closeButton.addActionListener {
@@ -132,6 +132,7 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Node>, nodesToAdd: List<N
         // Set initial text for add node button
         addNodeButton.text = if (heap.getSize() < nodesToAdd.size) "Add Node" else "No Nodes to Add"
         addNodeButton.isEnabled = nodesToAdd.isNotEmpty()
+        deleteMinButton.isEnabled = nodesToAdd.isEmpty()
 
         dialog.isVisible = true
     }

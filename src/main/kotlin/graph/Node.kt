@@ -18,6 +18,7 @@ data class Node(val id: Int) : Comparable<Node> {
     }
 
     override fun compareTo(other: Node): Int {
-        return key.compareTo(other.key)
+        val keyComparison = key.compareTo(other.key)
+        return if (keyComparison == 0) id.compareTo(other.id) else keyComparison
     }
 }

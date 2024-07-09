@@ -6,7 +6,7 @@ import graph.Graph
 import heaps.HeapKind
 import kotlin.time.measureTime
 
-fun benchmark(seed: Long) {
+fun runBenchmark(seed: Long) {
     val completenessDegrees = listOf(0.1, 0.3, 0.5, 0.9, 1.0)
     val nodeNumbers = listOf(100, 1000)
 
