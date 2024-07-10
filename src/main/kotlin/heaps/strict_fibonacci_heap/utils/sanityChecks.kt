@@ -136,7 +136,10 @@ fun <T : Comparable<T>> checkFixList(heapRecord: HeapRecord<T>) {
 
     if (heapRecord.size > 0) {
         var childCounter = 0
-        heapRecord.root?.leftChild?.forEach { childCounter++ }
+        heapRecord.root?.leftChild?.forEach {
+            childCounter++
+            return@forEach true
+        }
         val R = 2 * ln(heapRecord.size.toDouble()) + 6
         if (childCounter > R + 3)
             throw IllegalStateException(

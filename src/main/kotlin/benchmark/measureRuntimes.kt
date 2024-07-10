@@ -30,7 +30,7 @@ private fun measureRuntime(
 }
 
 fun measureRuntimes(seed: Long): MutableList<BenchmarkResults> {
-    val nodeNumbers = listOf(1000, 5000, 10000)
+    val nodeNumbers = listOf(1000, 5000)
     val completenessDegrees = listOf(0.2, 0.5, 0.9, 1.0)
     val results = mutableListOf<BenchmarkResults>()
 

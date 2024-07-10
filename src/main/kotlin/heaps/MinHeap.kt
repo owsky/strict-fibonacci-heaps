@@ -1,5 +1,6 @@
 package heaps
 
+/** Abstract class which defines the methods that min heaps should expose. */
 abstract class MinHeap<T : Comparable<T>> {
     // Insert an item not currently in the heap
     abstract fun insert(item: T)

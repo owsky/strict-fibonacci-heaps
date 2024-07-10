@@ -7,6 +7,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+/** Helper function which runs Dijkstra's algorithm. */
 fun runDijkstra(kind: HeapKind) {
     logger.info { "Running Dijkstra's algorithm with a $kind" }
 

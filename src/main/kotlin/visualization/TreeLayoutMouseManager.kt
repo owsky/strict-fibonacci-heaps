@@ -10,7 +10,7 @@ import org.graphstream.ui.swing_viewer.util.DefaultMouseManager
 import org.graphstream.ui.view.View
 import org.graphstream.ui.view.util.InteractiveElement
 
-class CustomMouseManager : DefaultMouseManager() {
+class TreeLayoutMouseManager : DefaultMouseManager() {
 
     private val popup = JPopupMenu()
 
@@ -24,20 +24,27 @@ class CustomMouseManager : DefaultMouseManager() {
         val element = view.findGraphicElementAt(types, point.x.toDouble(), point.y.toDouble())
 
         if (element != null && element is Node) {
-            val rank = element.getAttribute("ui.rank")
-            if (rank != null) showPopup(e, element, rank as Int)
+            showPopup(e, element)
         } else {
             popup.isVisible = false
         }
     }
 
-    private fun showPopup(e: MouseEvent, node: Node, rank: Int) {
+    private fun showPopup(e: MouseEvent, node: Node) {
         popup.removeAll()
         val isActiveRoot = node.getAttribute("ui.activeRoot")
-        val hasLoss = node.getAttribute("ui.loss")
-        var text = "Rank: $rank"
-        if (isActiveRoot != null) text = "Active Root, $text"
-        if (hasLoss != null) text = "$text, Loss $hasLoss"
+        val loss = node.getAttribute("ui.loss")
+        val isNonLinkableChild = node.getAttribute("ui.nonLinkableChild")
+        val rank = node.getAttribute("ui.rank")
+
+        var text = ""
+
+        fun addComma(str: String) = if (str.isNotEmpty()) ", " else ""
+
+        rank?.let { text += "Rank $rank" }
+        isActiveRoot?.let { text += "${addComma(text)}Active Root" }
+        loss?.let { text += "${addComma(text)}Loss $loss" }
+        isNonLinkableChild?.let { text += "${addComma(text)}Non-Linkable Child" }
         popup.add(JLabel(text))
 
         // Display the popup
@@ -59,6 +66,6 @@ class CustomMouseManager : DefaultMouseManager() {
             y = e.y + 10 // If it doesn't fit above, show it below
         }
 
-        popup.show(component, x, y)
+        if (text.isNotEmpty()) popup.show(component, x, y)
     }
 }

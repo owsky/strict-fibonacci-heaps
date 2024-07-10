@@ -7,6 +7,14 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * Active Root Reduction transformation.
+ *
+ * Let x and y be active roots of equal rank r. Assume w.l.o.g. x.key < y.key. Link y to x. If the
+ * rightmost child z of x is passive, make z a child of the root.
+ *
+ * T(n) = O(1)
+ */
 fun <T : Comparable<T>> activeRootReduction(
     n1: NodeRecord<T>,
     n2: NodeRecord<T>,
@@ -24,8 +32,6 @@ fun <T : Comparable<T>> activeRootReduction(
     logger.debug { "Performing an active root reduction with nodes ${n1.item} and ${n2.item}" }
 
     val (x, y) = sortPair(n1, n2)
-
-    // link y to x, x.item < y.item
     link(y, x, heapRecord)
 
     x.leftChild?.let { firstChild ->
@@ -34,10 +40,20 @@ fun <T : Comparable<T>> activeRootReduction(
     }
 }
 
+/**
+ * Returns whether an active root reduction is possible.
+ *
+ * T(n) = O(1)
+ */
 fun <T : Comparable<T>> canPerformActiveRootReduction(heapRecord: HeapRecord<T>): Boolean {
     return heapRecord.fixListPartOne != null
 }
 
+/**
+ * Performs an active root reduction.
+ *
+ * T(n) = O(1)
+ */
 fun <T : Comparable<T>> performActiveRootReduction(heapRecord: HeapRecord<T>) {
     val n1 = heapRecord.fixListPartOne!!
     val n2 = n1.right!!

@@ -7,6 +7,7 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+/** Helper function which runs Prim's algorithm. */
 fun runPrim(kind: HeapKind) {
     logger.info { "Running Prim's algorithm with a $kind" }
 

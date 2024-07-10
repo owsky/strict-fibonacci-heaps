@@ -7,6 +7,14 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * Two Nodes Loss Reduction Transformation.
+ *
+ * Given two active nodes [a] and [b] with rank r and loss = 1, assume w.l.o.g. a.key < b.key. Link
+ * [b] to [a] and set the loss of [a] and [b] to zero.
+ *
+ * T(n) = O(1)
+ */
 fun <T : Comparable<T>> twoNodesLossReduction(
     a: NodeRecord<T>,
     b: NodeRecord<T>,
@@ -34,6 +42,11 @@ fun <T : Comparable<T>> twoNodesLossReduction(
     y.setLoss(0u, heapRecord)
 }
 
+/**
+ * Returns whether a two nodes loss reduction is possible.
+ *
+ * T(n) = O(1)
+ */
 fun <T : Comparable<T>> canPerformTwoNodesLossReduction(heapRecord: HeapRecord<T>): Boolean {
     heapRecord.fixListPartFour?.let { n1 ->
         n1.right?.let { n2 ->
@@ -43,6 +56,11 @@ fun <T : Comparable<T>> canPerformTwoNodesLossReduction(heapRecord: HeapRecord<T
     return false
 }
 
+/**
+ * Performs a two node loss reduction is possible.
+ *
+ * T(n) = O(1)
+ */
 fun <T : Comparable<T>> performTwoNodesLossReduction(heapRecord: HeapRecord<T>) {
     val n1 = heapRecord.fixListPartFour!!
     val n2 = n1.right!!

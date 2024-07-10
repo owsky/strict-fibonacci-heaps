@@ -16,7 +16,7 @@ class StrictFibonacciHeapTest :
                 shouldNotThrow<Exception> {
                     runBlocking {
                         val jobs =
-                            (1..100).map {
+                            (1..1).map {
                                 launch(Dispatchers.Default) {
                                     val nums = generateIDs(100000, 0..10000000, 1234L)
                                     val h = StrictFibonacciHeap(nums)

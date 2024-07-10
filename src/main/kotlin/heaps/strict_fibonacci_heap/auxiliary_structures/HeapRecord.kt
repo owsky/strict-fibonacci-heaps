@@ -4,6 +4,10 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * This class defines the Heap Record, which serves as the entrypoint for a Strict Fibonacci Heap.
+ * It holds references to key parts of the heap, like the [root] and the [activeRecord].
+ */
 class HeapRecord<T : Comparable<T>>(root: T? = null) {
     var size: Int = 0
     var root: NodeRecord<T>? = null
@@ -34,6 +38,11 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         }
     }
 
+    /**
+     * Returns the head of the fix-list for the specified [fixListPart].
+     *
+     * T(n) = O(1)
+     */
     private fun getFixListPartHead(fixListPart: FixListPart): FixListRecord<T>? {
         return when (fixListPart) {
             FixListPart.PART_ONE -> fixListPartOne
@@ -43,6 +52,11 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         }
     }
 
+    /**
+     * Sets the head of the fix-list part for which [xFix] is located.
+     *
+     * T(n) = O(1)
+     */
     private fun setFixListPartHead(xFix: FixListRecord<T>) {
         when (xFix.fixListPart) {
             FixListPart.PART_ONE -> fixListPartOne = xFix
@@ -53,6 +67,11 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         }
     }
 
+    /**
+     * Removes the head of the fix-list for the specified [fixListPart].
+     *
+     * T(n) = O(1)
+     */
     private fun removeFixListPartHead(fixListPart: FixListPart) {
         when (fixListPart) {
             FixListPart.PART_ONE -> fixListPartOne = null
@@ -62,6 +81,11 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         }
     }
 
+    /**
+     * Inserts the given [xFix] into the fix-list if there are no nodes in any of the four parts.
+     *
+     * T(n) = O(1)
+     */
     private fun insertIntoEmptyFixList(xFix: FixListRecord<T>) {
         if (fixListSize > 0) throw IllegalStateException("Fix-list is not empty")
 
@@ -79,26 +103,51 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         }
     }
 
+    /**
+     * Inserts the given [xFix] into part one of the fix-list.
+     *
+     * T(n) = O(1)
+     */
     private fun fixListInsertIntoPartOne(xFix: FixListRecord<T>) {
         logger.debug { "Inserting ${xFix.node.item} into part one of the fix-list" }
         fixListInsertHead(xFix, FixListPart.PART_ONE)
     }
 
+    /**
+     * Inserts the given [xFix] into part two of the fix-list.
+     *
+     * T(n) = O(1)
+     */
     private fun fixListInsertIntoPartTwo(xFix: FixListRecord<T>) {
         logger.debug { "Inserting ${xFix.node.item} into part two of the fix-list" }
         fixListInsertHead(xFix, FixListPart.PART_TWO)
     }
 
+    /**
+     * Inserts the given [xFix] into part three of the fix-list.
+     *
+     * T(n) = O(1)
+     */
     private fun fixListInsertIntoPartThree(xFix: FixListRecord<T>) {
         logger.debug { "Inserting ${xFix.node.item} into part three of the fix-list" }
         fixListInsertHead(xFix, FixListPart.PART_THREE)
     }
 
+    /**
+     * Inserts the given [xFix] into part four of the fix-list.
+     *
+     * T(n) = O(1)
+     */
     private fun fixListInsertIntoPartFour(xFix: FixListRecord<T>) {
         logger.debug { "Inserting ${xFix.node.item} into part four of the fix-list" }
         fixListInsertHead(xFix, FixListPart.PART_FOUR)
     }
 
+    /**
+     * Inserts the given node [x] into part the proper part of the fix-list.
+     *
+     * T(n) = O(1)
+     */
     fun insertIntoFixList(x: NodeRecord<T>) {
         if (x.rank is FixListRecord<*>)
             throw IllegalArgumentException(
@@ -121,42 +170,59 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
             }
 
             0u -> {
+                // if the loss is zero, then xFix will either go in part one or part two
                 val rankActiveRoots = xRank.activeRoots
                 if (rankActiveRoots == null) {
+                    // if xFix's rank doesn't point to an active root, set the pointer to xFix and
+                    // insert it into part one
                     xRank.setActiveRootsPointer(xFix)
                     fixListInsertIntoPartTwo(xFix)
                 } else {
+                    // follow the rank's activeRoots pointer to insert xFix into the proper part
                     val nextInFix = rankActiveRoots.right
                     if (nextInFix != null &&
                         nextInFix.node.loss == 0u &&
                         nextInFix.rank === xRank) {
+                        // if the node after activeRoots is an active root of the same rank, it
+                        // means that activeRoots is already in part one so simply add xFix to its
+                        // right
                         fixListInsertRightOf(xFix, rankActiveRoots)
                     } else {
+                        // otherwise activeRoots is in part two, so move it to part one first and
+                        // then insert xFix to its right
                         fixListRemove(rankActiveRoots, false)
                         fixListInsertIntoPartOne(rankActiveRoots)
                         fixListInsertRightOf(xFix, rankActiveRoots)
                     }
-                    xFix.fixListPart = FixListPart.PART_ONE
                 }
             }
 
             else -> {
+                // if the loss is non-zero then xFix needs to go either in part three or part four
                 val rankLoss = xRank.loss
                 if (rankLoss == null) {
+                    // if xFix's rank doesn't point to a node with positive loss, set it to xFix
                     xRank.setLossPointer(xFix)
-                    fixListInsertIntoPartThree(xFix)
+                    // if xFix's loss is greater than 2, insert it into part four
+                    if (x.loss!! >= 2u) fixListInsertIntoPartFour(xFix)
+                    // otherwise insert it into part three
+                    else fixListInsertIntoPartThree(xFix)
                 } else {
+                    // otherwise follow the rank's loss pointer to insert xFix into the proper part
                     val nextInFix = rankLoss.right
                     if (nextInFix != null &&
                         nextInFix.node.loss!! > 0u &&
                         nextInFix.rank === xRank) {
+                        // if the node to the right of the loss is an active node with positive loss
+                        // of the same rank, it means that loss is already in part four so add xFix
+                        // to its right
                         fixListInsertRightOf(xFix, rankLoss)
                     } else {
+                        // otherwise first move loss to part four and then insert xFix to its right
                         fixListRemove(rankLoss, false)
                         fixListInsertIntoPartFour(rankLoss)
                         fixListInsertRightOf(xFix, rankLoss)
                     }
-                    xFix.fixListPart = FixListPart.PART_FOUR
                 }
             }
         }
@@ -164,6 +230,11 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         fixListSize++
     }
 
+    /**
+     * Inserts [xFix] in-between [left] and [right].
+     *
+     * T(n) = O(1)
+     */
     private fun fixListInsertBetween(
         xFix: FixListRecord<T>,
         left: FixListRecord<T>,
@@ -176,12 +247,19 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         xFix.right = right
         left.right = xFix
         right.left = xFix
+        xFix.fixListPart = left.fixListPart
     }
 
+    /**
+     * Inserts [xFix] to the right of [yFix].
+     *
+     * T(n) = O(1)
+     */
     private fun fixListInsertRightOf(xFix: FixListRecord<T>, yFix: FixListRecord<T>) {
         if (yFix.right === xFix) return
 
         val nextInFix = yFix.right
+        xFix.fixListPart = yFix.fixListPart
 
         if (nextInFix == null) {
             // there is only one item on the fix-list
@@ -192,6 +270,11 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         }
     }
 
+    /**
+     * Inserts [xFix] at the head of the fix-list part, depending on the value of [fixListPart].
+     *
+     * T(n) = O(1)
+     */
     private fun fixListInsertHead(xFix: FixListRecord<T>, fixListPart: FixListPart) {
         if (xFix.fixListPart === fixListPart)
             throw IllegalArgumentException(
@@ -205,10 +288,16 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         } ?: run { setFixListPartHead(xFix) }
     }
 
+    /**
+     * Removes [xFix] from the fix-list. If [resetRankPointers] is true, then also resets the
+     * [xFix]'s rank's pointers. Use [resetRankPointers] set to false if you're moving [xFix] from
+     * one part of the fix-list to another. Otherwise, set it to true if you're removing [xFix]
+     * permanently from the fix-list.
+     */
     fun fixListRemove(xFix: FixListRecord<T>, resetRankPointers: Boolean) {
         logger.debug { "Removing ${xFix.node.item} from the fix-list" }
         if (resetRankPointers) {
-            xFix.rank.removeFixListPointers(xFix, this)
+            xFix.rank.resetFixListPointers(xFix)
             xFix.node.rank = xFix.node.getRank()
         }
 
@@ -242,7 +331,7 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         if (resetRankPointers) {
             fixListSize--
             if (xFix.node.loss == 0u) {
-                // if xFix was an active root, check if activeRoots needs moving
+                // if xFix was an active root, check if xFix's rank's activeRoots needs moving
                 xFix.rank.activeRoots?.let { activeRoots ->
                     val nextInFix = activeRoots.right
                     if (nextInFix == null || nextInFix.rank !== xFix.rank) {
@@ -251,6 +340,7 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
                     }
                 }
             } else {
+                // if xFix was a node with positive loss, check if xFix's rank's loss needs moving
                 xFix.rank.loss?.let { loss ->
                     val nextInFix = loss.right
                     if (nextInFix == null || nextInFix.rank !== xFix.rank) {
@@ -262,6 +352,12 @@ class HeapRecord<T : Comparable<T>>(root: T? = null) {
         }
     }
 
+    /**
+     * Iterates over all nodes on all the fix-list parts, starting from part one. Only used for
+     * debugging purposes.
+     *
+     * T(n) = O(m), with m equal to the number of nodes on the fix-list.
+     */
     fun fixListForEach(action: (FixListRecord<T>) -> Unit) {
         for (currentFixPartEnum in FixListPart.entries) {
             val currentFixPart = getFixListPartHead(currentFixPartEnum)

@@ -2,6 +2,7 @@ package utils
 
 import kotlin.random.Random
 
+/** Generates [count] random IDs inside [range] using [seed]. */
 fun generateIDs(count: Int, range: IntRange, seed: Long): Set<Int> {
     if (range.last - range.first < count) throw IllegalArgumentException("Range is too narrow")
     val random = Random(seed)

@@ -21,9 +21,9 @@ fun visualizeTree(heap: StrictFibonacciHeap<Node>) {
     viewer.disableAutoLayout()
 
     val viewPanel = viewer.addDefaultView(false) as ViewPanel
-    viewPanel.setMouseManager(CustomMouseManager())
+    viewPanel.setMouseManager(TreeLayoutMouseManager())
 
-    addNode(heap.heapRecord.root, graph)
+    addNode(heap.heapRecord.root, graph, null, heap.heapRecord)
 
     val heapSize = heap.getSize().toDouble()
     val t = TreeLayout(heap.heapRecord.root!!.item.toString(), heapSize * 3, heapSize.pow(1.5))

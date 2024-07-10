@@ -53,13 +53,13 @@ fun visualizeTreeInteractive(heap: StrictFibonacciHeap<Node>, nodesToAdd: List<N
         viewer.disableAutoLayout()
 
         val viewPanel = viewer.addDefaultView(false) as ViewPanel
-        viewPanel.setMouseManager(CustomMouseManager())
+        viewPanel.setMouseManager(TreeLayoutMouseManager())
 
         fun updateLayout() {
             graph.clear()
             val heapSize = heap.getSize().toDouble()
             if (heapSize > 0.0) {
-                addNode(heap.heapRecord.root, graph)
+                addNode(heap.heapRecord.root, graph, null, heap.heapRecord)
 
                 val t =
                     TreeLayout(

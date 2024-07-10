@@ -9,14 +9,20 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+/** Strict Fibonacci Heap implementation for Prim's and Dijkstra's algorithms. */
 class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList()) : MinHeap<T>() {
-    var heapRecord = HeapRecord<T>()
+    private var heapRecord = HeapRecord<T>()
     private val lookup: MutableMap<T, NodeRecord<T>> = mutableMapOf()
 
     init {
         items.forEach { item -> insert(item) }
     }
 
+    /**
+     * Inserts [item] into a new Strict Fibonacci Heap and melds it to the current one
+     *
+     * T(n) = O(1)
+     */
     override fun insert(item: T) {
         logger.debug { "Inserting $item" }
         if (heapRecord.root == null) {
@@ -29,9 +35,14 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         }
     }
 
+    /**
+     * Melds [otherHeap] with the current Strict Fibonacci Heap. It is only used when inserting a
+     * new item.
+     *
+     * T(n) = O(1)
+     */
     private fun meld(otherHeap: HeapRecord<T>) {
         lookup[otherHeap.root!!.item] = otherHeap.root!!
-        val previousRoot = heapRecord.root!!
         val newSize = heapRecord.size + otherHeap.size
 
         val smallerHeap: HeapRecord<T>
@@ -50,7 +61,7 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         smallerHeap.activeRecord.flag = false
 
         val (u, v) = sortPair(x, y)
-        link(v, u, heapRecord)
+        link(v, u, biggerHeap)
 
         // merge queues
         val newQueueHead = mergeQueues(smallerHeap, v, biggerHeap)
@@ -62,10 +73,8 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         heapRecord.size = newSize
         heapRecord.root = u
         heapRecord.qHead = newQueueHead
-
-        if (previousRoot !== heapRecord.root) heapRecord.nonLinkableChild = null
-        if (heapRecord.nonLinkableChild == null && !v.isPassiveLinkable())
-            heapRecord.nonLinkableChild = v
+        if (heapRecord.nonLinkableChild?.parent !== u)
+            heapRecord.nonLinkableChild = if (v.isPassiveLinkable()) null else v
 
         // do one active root reduction and one root degree reduction if possible
         var rootDegreeReductionCounter = 0
@@ -83,6 +92,12 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         }
     }
 
+    /**
+     * Deletes the minimum item from the heap. It is located at the root, so a new root needs to be
+     * appointed.
+     *
+     * T(n) = O(log n)
+     */
     private fun deleteMin() {
         --heapRecord.size
         lookup.remove(heapRecord.root!!.item)
@@ -120,30 +135,24 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         }
 
         // do a loss reduction if possible
-        if (canPerformTwoNodesLossReduction(heapRecord)) {
-            //
-            performTwoNodesLossReduction(heapRecord)
-        } else if (canPerformOneNodeLossReduction(heapRecord)) {
-            //
-            performOneNodeLossReduction(heapRecord)
-        }
+        if (canPerformTwoNodesLossReduction(heapRecord)) performTwoNodesLossReduction(heapRecord)
+        else if (canPerformOneNodeLossReduction(heapRecord)) performOneNodeLossReduction(heapRecord)
 
         // do active root reductions and root degree reductions in any order until none of either is
         // possible
         while (canPerformActiveRootReduction(heapRecord) ||
             canPerformRootDegreeReduction(heapRecord)) {
-            if (canPerformActiveRootReduction(heapRecord)) {
-                //
-                performActiveRootReduction(heapRecord)
-            }
+            if (canPerformActiveRootReduction(heapRecord)) performActiveRootReduction(heapRecord)
 
-            if (canPerformRootDegreeReduction(heapRecord)) {
-                //
-                performRootDegreeReduction(heapRecord)
-            }
+            if (canPerformRootDegreeReduction(heapRecord)) performRootDegreeReduction(heapRecord)
         }
     }
 
+    /**
+     * Deletes the minimum item from the heap and returns it.
+     *
+     * T(n) = O(log n)
+     */
     override fun extractMin(): T {
         if (getSize() == 0) throw NoSuchElementException("The heap is empty")
         val min =
@@ -154,6 +163,12 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         return min
     }
 
+    /**
+     * Given [key] and its replacement [smallerKey], substitutes [smallerKey] in [key]'s place and
+     * adjusts the heap so the invariants are still enforced.
+     *
+     * T(n) = O(1)
+     */
     override fun decreaseKey(key: T, smallerKey: T) {
         val x = lookup[key] ?: throw NoSuchElementException("Key not found")
         x.item = smallerKey
@@ -191,14 +206,29 @@ class StrictFibonacciHeap<T : Comparable<T>>(items: Collection<T> = emptyList())
         }
     }
 
+    /**
+     * Returns the size of the heap.
+     *
+     * T(n) = O(1)
+     */
     override fun getSize(): Int {
         return heapRecord.size
     }
 
+    /**
+     * Returns whether the heap is empty.
+     *
+     * T(n) = O(1)
+     */
     override fun isEmpty(): Boolean {
         return heapRecord.size == 0
     }
 
+    /**
+     * Returns whether the heap contains [key].
+     *
+     * T(n) = O(1)
+     */
     override fun contains(key: T): Boolean {
         return lookup.containsKey(key)
     }

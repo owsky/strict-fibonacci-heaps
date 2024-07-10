@@ -6,6 +6,13 @@ import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * One Node Loss Reduction Transformation.
+ *
+ * Given active node [x] with loss >= 2, link [x] to the root.
+ *
+ * T(n) = O(1)
+ */
 fun <T : Comparable<T>> oneNodeLossReduction(x: NodeRecord<T>, heapRecord: HeapRecord<T>) {
     if (x.loss == null || x.loss!! < 2u)
         throw IllegalArgumentException(
@@ -19,10 +26,20 @@ fun <T : Comparable<T>> oneNodeLossReduction(x: NodeRecord<T>, heapRecord: HeapR
     link(x, root, heapRecord)
 }
 
+/**
+ * Returns whether a one node loss reduction is possible.
+ *
+ * T(n) = O(1)
+ */
 fun <T : Comparable<T>> canPerformOneNodeLossReduction(heapRecord: HeapRecord<T>): Boolean {
     return heapRecord.fixListPartFour != null && heapRecord.fixListPartFour!!.node.loss!! >= 2u
 }
 
+/**
+ * Performs a one node loss reduction is possible.
+ *
+ * T(n) = O(1)
+ */
 fun <T : Comparable<T>> performOneNodeLossReduction(heapRecord: HeapRecord<T>) {
     oneNodeLossReduction(heapRecord.fixListPartFour!!.node, heapRecord)
 }

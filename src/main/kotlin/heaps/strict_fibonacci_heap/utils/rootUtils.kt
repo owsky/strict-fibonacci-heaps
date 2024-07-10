@@ -4,52 +4,43 @@ import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import heaps.strict_fibonacci_heap.transformations.link
 
+/**
+ * Returns the child of the root with minimum key.
+ *
+ * T(n) = O(log n)
+ */
 fun <T : Comparable<T>> findMinimumRootChild(heapRecord: HeapRecord<T>): NodeRecord<T> {
-    val firstChild = heapRecord.root!!.leftChild!!
-    var minChild: NodeRecord<T> = firstChild
-    var currChild: NodeRecord<T> = firstChild.right!!
-    while (currChild !== firstChild) {
-        if (currChild.item < minChild.item) minChild = currChild
-        currChild = currChild.right!!
+    if (heapRecord.root == null) throw IllegalArgumentException("The heap is empty")
+    else if (heapRecord.root!!.leftChild == null)
+        throw IllegalArgumentException("The root has no children")
+
+    var minChild: NodeRecord<T> = heapRecord.root!!.leftChild!!
+    heapRecord.root?.leftChild?.forEach { currentChild ->
+        if (currentChild.item < minChild.item) minChild = currentChild
+        return@forEach true
     }
+
     return minChild
 }
 
-fun <T : Comparable<T>> updateNonLinkableChild(heapRecord: HeapRecord<T>) {
+/**
+ * Links [x] and all of its siblings to the root.
+ *
+ * T(n) = O(log n)
+ */
+fun <T : Comparable<T>> linkAllToRoot(x: NodeRecord<T>?, heapRecord: HeapRecord<T>) {
     val root = heapRecord.root!!
-    heapRecord.nonLinkableChild = null
-    root.leftChild?.let {
-        if (it.isPassive() && it.isPassiveLinkable()) {
-            // if the first child is passive and non-linkable, set the pointer
-            heapRecord.nonLinkableChild = it
-        } else if (it.isActive()) {
-            // if it is active then set the pointer but look also for a non-linkable passive sibling
-            heapRecord.nonLinkableChild = it
-            var currentChild = it.right!!
-            while (currentChild !== it) {
-                if (currentChild.isPassive() && !currentChild.isPassiveLinkable()) {
-                    heapRecord.nonLinkableChild = currentChild
-                    break
-                }
-                currentChild = currentChild.right!!
-            }
-        }
+    x?.forEach { node ->
+        link(node, root, heapRecord)
+        return@forEach true
     }
 }
 
-fun <T : Comparable<T>> linkAllToRoot(firstChild: NodeRecord<T>?, heapRecord: HeapRecord<T>) {
-    val root = heapRecord.root!!
-    firstChild?.let {
-        var currentChild = it.right!!
-        link(it, root, heapRecord)
-        while (currentChild !== it) {
-            val nextChild = currentChild.right!!
-            link(currentChild, root, heapRecord)
-            currentChild = nextChild
-        }
-    }
-}
-
+/**
+ * Sets [x] as [heapRecord]'s new root node.
+ *
+ * T(n) = O(log n)
+ */
 fun <T : Comparable<T>> setNewRoot(x: NodeRecord<T>, heapRecord: HeapRecord<T>) {
     val previousRoot = heapRecord.root!!
 
@@ -67,22 +58,40 @@ fun <T : Comparable<T>> setNewRoot(x: NodeRecord<T>, heapRecord: HeapRecord<T>) 
         previousRoot.leftChild = if (x.right !== x) x.right else null
     }
 
+    // set the new non-linkable child
+    heapRecord.nonLinkableChild = null
+    x.leftChild?.forEach { currentChild ->
+        if (!currentChild.isPassiveLinkable()) {
+            if (heapRecord.nonLinkableChild == null) {
+                heapRecord.nonLinkableChild = currentChild
+            } else if (heapRecord.nonLinkableChild!!.isActive()) {
+                heapRecord.nonLinkableChild = currentChild
+            }
+            return@forEach true
+        }
+        // early return if current child is passive and linkable
+        return@forEach false
+    }
+
     // update x's and its siblings' left and right pointers
-    removeFromCircularList(x)
+    removeFromSiblings(x)
 
     // set the x's parent to null
     x.parent = null
 
     // rearrange root children in order to restore invariant I1: structure
-    rearrangeRootChildren(heapRecord)
-
-    // update non-linkable child pointer
-    updateNonLinkableChild(heapRecord)
+    //    rearrangeRootChildren(heapRecord)
 
     // make all the other children of the root children of x
     linkAllToRoot(previousRoot.leftChild, heapRecord)
 }
 
+/**
+ * Rearranged the order of the root's children so that invariant I1 is enforced, thus the children
+ * are ordered as: active nodes -> passive nodes -> passive and linkable nodes
+ *
+ * T(n) = O(log n)
+ */
 fun <T : Comparable<T>> rearrangeRootChildren(heapRecord: HeapRecord<T>) {
     val root = heapRecord.root!!
     val activeChildren: MutableList<NodeRecord<T>> = mutableListOf()
@@ -98,75 +107,38 @@ fun <T : Comparable<T>> rearrangeRootChildren(heapRecord: HeapRecord<T>) {
     }
 
     root.leftChild = null
-    activeChildren.forEach { currentChild ->
-        if (root.leftChild == null) {
-            root.leftChild = currentChild
-            currentChild.left = currentChild
-            currentChild.right = currentChild
-        } else {
-            val firstChild = root.leftChild!!
-            val lastChild = firstChild.left!!
 
-            if (firstChild === lastChild) {
-                // I've only inserted one child yet
-                firstChild.right = currentChild
-                firstChild.left = currentChild
-                currentChild.right = firstChild
-                currentChild.left = firstChild
+    listOf(activeChildren, passiveChildren, passiveLinkableChildren).forEach { nodesList ->
+        nodesList.forEach { node ->
+            if (root.leftChild == null) {
+                root.leftChild = node
+                node.left = node
+                node.right = node
             } else {
-                lastChild.right = currentChild
-                firstChild.left = currentChild
-                currentChild.left = lastChild
-                currentChild.right = firstChild
+                val firstChild = root.leftChild!!
+                val lastChild = firstChild.left!!
+
+                if (firstChild === lastChild) {
+                    // I've only inserted one child yet
+                    firstChild.right = node
+                    firstChild.left = node
+                    node.right = firstChild
+                    node.left = firstChild
+                } else {
+                    lastChild.right = node
+                    firstChild.left = node
+                    node.left = lastChild
+                    node.right = firstChild
+                }
             }
         }
     }
+}
 
-    passiveChildren.forEach { currentChild ->
-        if (root.leftChild == null) {
-            root.leftChild = currentChild
-            currentChild.left = currentChild
-            currentChild.right = currentChild
-        } else {
-            val firstChild = root.leftChild!!
-            val lastChild = firstChild.left!!
-
-            if (firstChild === lastChild) {
-                // I've only inserted one child yet
-                firstChild.right = currentChild
-                firstChild.left = currentChild
-                currentChild.right = firstChild
-                currentChild.left = firstChild
-            } else {
-                lastChild.right = currentChild
-                firstChild.left = currentChild
-                currentChild.left = lastChild
-                currentChild.right = firstChild
-            }
-        }
-    }
-
-    passiveLinkableChildren.forEach { currentChild ->
-        if (root.leftChild == null) {
-            root.leftChild = currentChild
-            currentChild.left = currentChild
-            currentChild.right = currentChild
-        } else {
-            val firstChild = root.leftChild!!
-            val lastChild = firstChild.left!!
-
-            if (firstChild === lastChild) {
-                // I've only inserted one child yet
-                firstChild.right = currentChild
-                firstChild.left = currentChild
-                currentChild.right = firstChild
-                currentChild.left = firstChild
-            } else {
-                lastChild.right = currentChild
-                firstChild.left = currentChild
-                currentChild.left = lastChild
-                currentChild.right = firstChild
-            }
-        }
+fun <T : Comparable<T>> updateNonLinkableChild(x: NodeRecord<T>, heapRecord: HeapRecord<T>) {
+    if (!x.isPassiveLinkable()) {
+        if (heapRecord.nonLinkableChild == null) heapRecord.nonLinkableChild = x
+        else if (heapRecord.nonLinkableChild!!.isActive() && x.isPassive())
+            heapRecord.nonLinkableChild = x
     }
 }

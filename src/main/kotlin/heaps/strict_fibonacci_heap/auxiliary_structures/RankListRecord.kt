@@ -1,5 +1,10 @@
 package heaps.strict_fibonacci_heap.auxiliary_structures
 
+/**
+ * This class defines the node to be placed in the rank list, which is a doubly-linked list.
+ *
+ * [rankNumber] is only stored for debugging purposes.
+ */
 class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
     var inc: RankListRecord<T>? = null
     var dec: RankListRecord<T>? = null
@@ -11,6 +16,11 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
     var loss: FixListRecord<T>? = null
         private set
 
+    /**
+     * Sets the rank's [activeRoots] pointer.
+     *
+     * T(n) = O(1)
+     */
     fun setActiveRootsPointer(xFix: FixListRecord<T>) {
         if (activeRoots == null) {
             activeRoots = xFix
@@ -18,7 +28,12 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
         }
     }
 
-    private fun removeActiveRootsPointer(xFix: FixListRecord<T>) {
+    /**
+     * Resets the rank's [activeRoots] pointer.
+     *
+     * T(n) = O(1)
+     */
+    private fun resetActiveRootsPointer(xFix: FixListRecord<T>) {
         if (activeRoots === xFix) {
             // try to select a new candidate for activeRoots
             val nextInFix = xFix.right
@@ -33,6 +48,11 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
         }
     }
 
+    /**
+     * Sets the rank's [loss] pointer.
+     *
+     * T(n) = O(1)
+     */
     fun setLossPointer(xFix: FixListRecord<T>) {
         if (loss == null) {
             loss = xFix
@@ -40,7 +60,12 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
         }
     }
 
-    private fun removeLossPointer(xFix: FixListRecord<T>) {
+    /**
+     * Resets the rank's [loss] pointer.
+     *
+     * T(n) = O(1)
+     */
+    private fun resetLossPointer(xFix: FixListRecord<T>) {
         if (loss === xFix) {
             // try to select a new candidate for loss
             val nextInFix = xFix.right
@@ -55,11 +80,21 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
         }
     }
 
-    fun removeFixListPointers(xFix: FixListRecord<T>, heapRecord: HeapRecord<T>) {
-        removeActiveRootsPointer(xFix)
-        removeLossPointer(xFix)
+    /**
+     * Resets the rank's [activeRoots] and [loss] pointers.
+     *
+     * T(n) = O(1)
+     */
+    fun resetFixListPointers(xFix: FixListRecord<T>) {
+        resetActiveRootsPointer(xFix)
+        resetLossPointer(xFix)
     }
 
+    /**
+     * Returns whether the rank is loss-transformable.
+     *
+     * T(n) = O(1)
+     */
     fun isLossTransformable(): Boolean {
         if (loss == null) return false
 
@@ -73,6 +108,11 @@ class RankListRecord<T : Comparable<T>>(val rankNumber: Int) {
         return false
     }
 
+    /**
+     * Returns whether the rank is active-roots-transformable.
+     *
+     * T(n) = O(1)
+     */
     fun isActiveRootTransformable(): Boolean {
         if (activeRoots == null) return false
 

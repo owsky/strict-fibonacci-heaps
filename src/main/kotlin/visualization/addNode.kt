@@ -1,11 +1,17 @@
 package visualization
 
 import graph.Node
+import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
 import kotlin.math.roundToLong
 import org.graphstream.graph.Graph
 
-fun addNode(node: NodeRecord<Node>?, graph: Graph, childIndex: Int? = null) {
+fun addNode(
+    node: NodeRecord<Node>?,
+    graph: Graph,
+    childIndex: Int? = null,
+    heapRecord: HeapRecord<Node>
+) {
     if (node == null) return
 
     val nodeId = node.item.toString()
@@ -33,6 +39,7 @@ fun addNode(node: NodeRecord<Node>?, graph: Graph, childIndex: Int? = null) {
     } else {
         fillColor = "red"
     }
+    if (heapRecord.nonLinkableChild === node) graphNode.setAttribute("ui.nonLinkableChild")
     graphNode.setAttribute(
         "ui.style",
         "fill-color: $fillColor; stroke-mode: plain; stroke-color: black; stroke-width: 1px; $textOffset")
@@ -40,12 +47,12 @@ fun addNode(node: NodeRecord<Node>?, graph: Graph, childIndex: Int? = null) {
     node.leftChild?.let { firstChild ->
         var currentChildIndex = 0
         var currentChild = firstChild
-        addNode(currentChild, graph, currentChildIndex)
+        addNode(currentChild, graph, currentChildIndex, heapRecord)
         graph.addEdge("${nodeId}-${currentChild.item}", nodeId, currentChild.item.toString(), true)
         currentChild = currentChild.right!!
         ++currentChildIndex
         while (currentChild !== firstChild) {
-            addNode(currentChild, graph, currentChildIndex)
+            addNode(currentChild, graph, currentChildIndex, heapRecord)
             graph.addEdge(
                 "${nodeId}-${currentChild.item}", nodeId, currentChild.item.toString(), true)
             currentChild = currentChild.right!!

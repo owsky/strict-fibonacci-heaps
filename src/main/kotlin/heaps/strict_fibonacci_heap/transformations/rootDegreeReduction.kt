@@ -2,12 +2,21 @@ package heaps.strict_fibonacci_heap.transformations
 
 import heaps.strict_fibonacci_heap.auxiliary_structures.HeapRecord
 import heaps.strict_fibonacci_heap.auxiliary_structures.NodeRecord
-import heaps.strict_fibonacci_heap.utils.insertIntoCircularList
-import heaps.strict_fibonacci_heap.utils.removeFromCircularList
+import heaps.strict_fibonacci_heap.utils.insertNodeBetween
+import heaps.strict_fibonacci_heap.utils.removeFromSiblings
 import io.github.oshai.kotlinlogging.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
 
+/**
+ * Root Degree Reduction Transformation.
+ *
+ * Let [a], [b], [c] be the three rightmost passive linkable children of the root. Assume w.l.o.g.
+ * a.key < b.key < c.key. Set [a] and [b] as active. Link [c] to [b] and [b] to [a]. Make [a] the
+ * leftmost child of the root.
+ *
+ * T(n) = O(1)
+ */
 fun <T : Comparable<T>> rootDegreeReduction(
     a: NodeRecord<T>,
     b: NodeRecord<T>,
@@ -39,9 +48,8 @@ fun <T : Comparable<T>> rootDegreeReduction(
 
     // x is now an active root, so it becomes the leftmost child
     if (heapRecord.root!!.leftChild !== x) {
-        removeFromCircularList(x)
-        insertIntoCircularList(
-            heapRecord.root!!.leftChild!!.left!!, x, heapRecord.root!!.leftChild!!)
+        removeFromSiblings(x)
+        insertNodeBetween(heapRecord.root!!.leftChild!!.left!!, x, heapRecord.root!!.leftChild!!)
         heapRecord.root!!.leftChild = x
     }
 
@@ -53,6 +61,11 @@ fun <T : Comparable<T>> rootDegreeReduction(
     if (heapRecord.nonLinkableChild == null) heapRecord.nonLinkableChild = x
 }
 
+/**
+ * Returns whether a root degree reduction is possible.
+ *
+ * T(n) = O(1)
+ */
 fun <T : Comparable<T>> canPerformRootDegreeReduction(heapRecord: HeapRecord<T>): Boolean {
     // check if root has children
     val firstChild = heapRecord.root?.leftChild ?: return false
@@ -73,6 +86,11 @@ fun <T : Comparable<T>> canPerformRootDegreeReduction(heapRecord: HeapRecord<T>)
         trdLastChild.isPassiveLinkable()
 }
 
+/**
+ * Performs a root degree reduction is possible.
+ *
+ * T(n) = O(1)
+ */
 fun <T : Comparable<T>> performRootDegreeReduction(heapRecord: HeapRecord<T>) {
     val fstLastChild = heapRecord.root!!.leftChild!!.left!!
     val sndLastChild = fstLastChild.left!!
